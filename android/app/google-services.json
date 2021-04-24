@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "792115429090",
+    "project_id": "nss-blood-finder",
+    "storage_bucket": "nss-blood-finder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:792115429090:android:271ed2eb859a12a3dd68bb",
+        "android_client_info": {
+          "package_name": "com.example.nss_blood_finder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "792115429090-u35re943vtj9d69mvttsoao7oh3j4v40.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_awGbWEwreY-bAoC4fF6Gf4khC35deCI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "792115429090-u35re943vtj9d69mvttsoao7oh3j4v40.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
