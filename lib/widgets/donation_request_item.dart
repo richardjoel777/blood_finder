@@ -61,16 +61,12 @@ class DonationRequestItem extends StatelessWidget {
                       onPressed: () {
                         launch(('tel:${userData['phone1']}'));
                       },
-                      // style: TextButton.styleFrom(primary: Theme.of(context).primaryColor),
                       child: Text(userData['phone1'])),
                   TextButton(
                       onPressed: () {
                         launch(('tel:${userData['phone2']}'));
                       },
-                      // style: TextButton.styleFrom(primary: Theme.of(context).primaryColor),
                       child: Text(userData['phone2'])),
-                  // ElevatedButton(
-                  //     onPressed: () {}, child: Text("Decline (shant exist)")),
                 ],
               )
             ],

@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:nss_blood_finder/services/blood.dart';
-
+import 'package:nss_blood_finder/services/blood.dart';
 import '../widgets/donation_request_item.dart';
 
 class DonateScreen extends StatefulWidget {
@@ -19,12 +17,11 @@ class _DonateScreenState extends State<DonateScreen> {
   bool isLoading = false;
   List deptFilteredData = [];
   String dept;
+  List depts = [];
+  bool isInit = true;
   Geolocator geolocator = Geolocator();
   bool isAreaFilter = false;
   Future<void> getDonorData(List donorData, String hospitalArea) async {
-    // print("hi");
-    // print(donorData.length);
-    //
     if (!isLoaded) {
       setState(() {
         filteredData = [];
@@ -33,29 +30,21 @@ class _DonateScreenState extends State<DonateScreen> {
       final hUrl = Uri.parse(
           'https://nominatim.openstreetmap.org/search/$hArea?format=json');
       var hospitalRes = await http.get(hUrl);
-      print(hospitalRes.statusCode);
       if (hospitalRes.statusCode == 200) {
         var hospitalResData = jsonDecode(hospitalRes.body);
-        // print(hospitalResData);
         donorData.forEach((u) async {
-          // print(u['area']);
           var uArea = '${u['area']} India';
           var url = Uri.parse(
               'https://nominatim.openstreetmap.org/search/$uArea?format=json');
           var res = await http.get(url);
           var resData = jsonDecode(res.body);
           if (resData.length > 0) {
-            // print(hospitalResData[0]["lat"]);
-            // print(hospitalResData[0]["lon"]);
-            // print(resData[0]["lat"]);
-            // print(resData[0]["lon"]);
             var distance = (await geolocator.distanceBetween(
                     double.parse(hospitalResData[0]["lat"]),
                     double.parse(hospitalResData[0]["lon"]),
                     double.parse(resData[0]["lat"]),
                     double.parse(resData[0]["lon"])) /
                 1000);
-            print('${u['area']} $distance');
             if (distance <= 50) {
               setState(() {
                 filteredData.add(u);
@@ -74,32 +63,16 @@ class _DonateScreenState extends State<DonateScreen> {
     });
   }
 
-  // Future<void> addLatLong() async {
-  //   var fb = FirebaseFirestore.instance;
-  //   await fb
-  //       .collection("data")
-  //       .where(
-  //         "bloodGroup",
-  //       )
-  //       .get()
-  //       .then((snapshots) {
-  //     snapshots.docs.forEach((doc) async {
-  //       var uArea = '${doc.data()['area']} India';
-  //       var url = Uri.parse(
-  //           'https://nominatim.openstreetmap.org/search/$uArea?format=json');
-  //       var res = await http.get(url);
-  //       var resData = jsonDecode(res.body);
-  //       if (resData.length > 0) {
-  //         await BloodService()
-  //             .latLong(doc.id, double.parse(resData[0]["lat"]), double.parse(resData[0]["long"]));
-  //       } else {
-  //         await BloodService()
-  //             .latLong(doc.id, 0.0, 0.0);
-  //       }
-  //     });
-  //   });
-  //   print("FINISHED");
-  // }
+  Future<void> didChangeDependencies() async {
+    if (isInit) {
+      List departments = await BloodService().getDepartments();
+      setState(() {
+        depts = departments;
+        isInit = false;
+      });
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,21 +112,7 @@ class _DonateScreenState extends State<DonateScreen> {
                     ),
                     DropdownButton<String>(
                       value: dept == null ? null : dept,
-                      items: <String>[
-                        'All',
-                        'AUTOMOBILE',
-                        'B.sc',
-                        'CIVIL',
-                        'CSE',
-                        'ECE',
-                        'EEE',
-                        'E&I',
-                        'FT',
-                        'IT',
-                        'MCA',
-                        'MECH',
-                        'MTS',
-                      ].map((String v) {
+                      items: depts.map((dynamic v) {
                         return new DropdownMenuItem<String>(
                           value: v,
                           child: Text(v),
@@ -163,9 +122,11 @@ class _DonateScreenState extends State<DonateScreen> {
                         setState(() {
                           dept = newValue;
                           isLoaded = false;
-                          deptFilteredData = dept!="All" ? loadedData[0]
-                              .where((i) => i['dept'] == dept)
-                              .toList() : loadedData[0];
+                          deptFilteredData = dept != "All"
+                              ? loadedData[0]
+                                  .where((i) => i['dept'] == dept)
+                                  .toList()
+                              : loadedData[0];
                         });
                         if (isAreaFilter) {
                           setState(() {

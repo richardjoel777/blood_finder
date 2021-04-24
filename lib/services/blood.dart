@@ -7,6 +7,7 @@ class BloodService {
     await fb
         .collection("data")
         .where("bloodGroup", isEqualTo: bloodGroup)
+        .where("isWilling", isEqualTo: true)
         .get()
         .then((snapshots) {
       snapshots.docs.forEach((doc) {
@@ -16,11 +17,20 @@ class BloodService {
     return data;
   }
 
+  Future<List> getBloodGroups() async {
+    var fb = FirebaseFirestore.instance;
+    var doc = await fb.collection("data").doc("bloodGroups").get();
+    return doc.data()['groups'];
+  }
+
+  Future<List> getDepartments() async {
+    var fb = FirebaseFirestore.instance;
+    var doc = await fb.collection("data").doc("bloodGroups").get();
+    return doc.data()['departments'];
+  }
+
   Future<void> latLong(String docId, double lat, double long) async {
     var fb = FirebaseFirestore.instance;
-    await fb.collection("data").doc(docId).update({
-      'lat': lat,
-      'long': long
-    });
+    await fb.collection("data").doc(docId).update({'lat': lat, 'long': long});
   }
 }

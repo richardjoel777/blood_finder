@@ -11,10 +11,23 @@ class RequestsScreen extends StatefulWidget {
 class _RequestsScreenState extends State<RequestsScreen> {
   TextEditingController areaTextEditingController = new TextEditingController();
   String bloodgroup;
+  bool isInit = true;
+  List bloodGroups = [];
   BloodService bloodService = BloodService();
 
   showErrorMessage(String msg) {
     Fluttertoast.showToast(msg: msg);
+  }
+
+  Future<void> didChangeDependencies() async {
+    if (isInit) {
+      List groups = await bloodService.getBloodGroups();
+      setState(() {
+        bloodGroups = groups;
+        isInit = false;
+      });
+    }
+    super.didChangeDependencies();
   }
 
   @override
@@ -66,19 +79,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
                           SizedBox(
                             width: 10,
                           ),
-                          DropdownButton<String>(
+                          DropdownButton(
                             value: bloodgroup != null ? bloodgroup : null,
-                            items: <String>[
-                              'A+',
-                              'B+',
-                              'AB+',
-                              'O+',
-                              'A-',
-                              'B-',
-                              'AB-',
-                              'O-'
-                            ].map((String v) {
-                              return new DropdownMenuItem<String>(
+                            items: bloodGroups.map((dynamic v) {
+                              return new DropdownMenuItem(
                                 value: v,
                                 child: Text(v),
                               );
@@ -134,20 +138,6 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                 await bloodService.getBloodData(bloodgroup);
                             Navigator.pushNamed(context, DonateScreen.routeName,
                                 arguments: [bloodData, areaTextEditingController.text, bloodgroup]);
-                            // await .uploadRequest(
-                            //     nameTextEditingController.text,
-                            //     bloodgroup,
-                            //     _selectedRequiredDate,
-                            //     _selectedDOB,
-                            //     pinCodeTextEditingController.text,
-                            //     int.parse(ageTextEditingController.text),
-                            //     int.parse(unitsTextEditingController.text),
-                            //     areaTextEditingController.text,
-                            //     isCritical);
-                            // Fluttertoast.showToast(
-                            //     msg: "Your Request is successfully placed");
-                            //     Navigator.pushNamedAndRemoveUntil(
-                            //   context, '/', (route) => false);
                           }
                         },
                       )
