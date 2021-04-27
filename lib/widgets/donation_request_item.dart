@@ -16,6 +16,8 @@ class DonationRequestItem extends StatelessWidget {
         bottom: 10,
       ),
       child: Card(
+        color: userData['lastDonated']!=null ? (DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(
+                userData['lastDonated'].seconds * 1000)).inDays > 90 ? Colors.white : Colors.red[100]) : Colors.white,
         elevation: 5,
         child: Container(
           height: 160,

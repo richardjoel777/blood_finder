@@ -35,6 +35,8 @@ dependencies:
   http: ^0.13.1
   numerus: ^1.1.1
   url_launcher: ^6.0.3
+  provider: ^5.0.0
+  firebase_auth: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -49,13 +51,12 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/bloodDrop.png
     - assets/images/waiting.png
-    - assets/images/logo.png
     - assets/images/empty.png
+    - assets/images/icon.png
+    - assets/images/icon.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

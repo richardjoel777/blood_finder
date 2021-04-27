@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nss_blood_finder/screens/donateScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
+import 'package:nss_blood_finder/widgets/main_drawer.dart';
 
 class RequestsScreen extends StatefulWidget {
   @override
@@ -9,7 +10,6 @@ class RequestsScreen extends StatefulWidget {
 }
 
 class _RequestsScreenState extends State<RequestsScreen> {
-  TextEditingController areaTextEditingController = new TextEditingController();
   String bloodgroup;
   bool isInit = true;
   List bloodGroups = [];
@@ -33,9 +33,16 @@ class _RequestsScreenState extends State<RequestsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Blood Finder', style: Theme.of(context).textTheme.headline6,),),
+      backgroundColor: Colors.white,
+      drawer: MainDrawer(),
+      appBar: AppBar(
+        title: Text(
+          'KEC Blood Finder',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
       body: SingleChildScrollView(
-              child: Padding(
+        child: Padding(
           padding: EdgeInsets.all(8.0),
           child: Center(
             child: Column(
@@ -43,22 +50,15 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 SizedBox(
                   height: 35.0,
                 ),
-                Image(
-                  image: AssetImage("assets/images/logo.png"),
-                  width: 290.0,
-                  height: 200.0,
-                  alignment: Alignment.center,
-                ),
+                // Image.network("https://photos.google.com/share/AF1QipN8nc5sZQW3L8MRSPLWgp4Dp2N2vcuzauxrbbaFDz62iNoM0yDepApnSpAOH0_UZw/photo/AF1QipP9LL_yZwyGi3ZgHIvvTNV-2OuJfIDOC-Nn1tEN?key=WWNMSDBldTVVeHRkVE5CczloMzBkUlF5elA4RHVn", height: 200, width: 290, alignment: Alignment.center,),
+                 Image(
+              image: AssetImage("assets/images/icon.png"),
+              width: 290.0,
+              height: 200.0,
+              alignment: Alignment.center,
+            ),
                 SizedBox(
                   height: 20.0,
-                ),
-                Text(
-                  "Request Blood",
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(color: Colors.black, fontSize: 24),
-                  textAlign: TextAlign.center,
                 ),
                 Padding(
                   padding: EdgeInsets.all(20.0),
@@ -67,50 +67,39 @@ class _RequestsScreenState extends State<RequestsScreen> {
                       SizedBox(
                         height: 1.0,
                       ),
+                      SizedBox(
+                        height: 30.0,
+                      ),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Text(
-                            "Blood Group : ",
-                            style: Theme.of(context).textTheme.headline1.copyWith(
-                                fontSize: 14,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.black),
+                            'Blood Group : ',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6
+                                .copyWith(fontSize: 14, color: Colors.black),
                           ),
                           SizedBox(
                             width: 10,
                           ),
-                          DropdownButton(
-                            value: bloodgroup != null ? bloodgroup : null,
+                          DropdownButton<String>(
+                            value: bloodgroup == null ? null : bloodgroup,
                             items: bloodGroups.map((dynamic v) {
-                              return new DropdownMenuItem(
+                              return new DropdownMenuItem<String>(
                                 value: v,
                                 child: Text(v),
                               );
                             }).toList(),
-                            onChanged: (newValue) {
+                            onChanged: (value) {
                               setState(() {
-                                bloodgroup = newValue;
+                                bloodgroup = value;
                               });
                             },
                           ),
                         ],
                       ),
-                      SizedBox(
-                        height: 1.0,
-                      ),
-                      TextField(
-                        controller: areaTextEditingController,
-                        decoration: InputDecoration(
-                            labelText: "Area",
-                            labelStyle: TextStyle(
-                                fontSize: 14.0, fontFamily: 'RobotoCondensed'),
-                            hintStyle:
-                                TextStyle(color: Colors.grey, fontSize: 10.0)),
-                        style: TextStyle(fontSize: 14.0),
-                      ),
-                      SizedBox(
-                        height: 30.0,
-                      ),
+                      SizedBox(height: 30,),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           primary: Theme.of(context).primaryColor,
@@ -123,7 +112,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                           height: 50.0,
                           child: Center(
                             child: Text(
-                              "Request Blood",
+                              "Find Blood",
                               style: Theme.of(context).textTheme.headline6,
                             ),
                           ),
@@ -131,13 +120,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                         onPressed: () async {
                           if (bloodgroup == null) {
                             showErrorMessage("Blood Group is mandatory");
-                          } else if (areaTextEditingController.text.isEmpty) {
-                            showErrorMessage("Area is mandatory");
                           } else {
-                            List bloodData =
-                                await bloodService.getBloodData(bloodgroup);
-                            Navigator.pushNamed(context, DonateScreen.routeName,
-                                arguments: [bloodData, areaTextEditingController.text, bloodgroup]);
+                            Navigator.of(context)
+                                .pushNamed(DonateScreen.routeName, arguments: bloodgroup);
                           }
                         },
                       )

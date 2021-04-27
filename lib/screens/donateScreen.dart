@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
+import 'package:nss_blood_finder/screens/filters_screen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
+import 'package:provider/provider.dart';
 import '../widgets/donation_request_item.dart';
 
 class DonateScreen extends StatefulWidget {
@@ -12,206 +11,87 @@ class DonateScreen extends StatefulWidget {
 }
 
 class _DonateScreenState extends State<DonateScreen> {
-  List filteredData = [];
-  bool isLoaded = false;
-  bool isLoading = false;
-  List deptFilteredData = [];
-  String dept;
-  List depts = [];
+  String bloodGroup;
   bool isInit = true;
-  Geolocator geolocator = Geolocator();
-  bool isAreaFilter = false;
-  Future<void> getDonorData(List donorData, String hospitalArea) async {
-    if (!isLoaded) {
-      setState(() {
-        filteredData = [];
-      });
-      var hArea = '$hospitalArea India';
-      final hUrl = Uri.parse(
-          'https://nominatim.openstreetmap.org/search/$hArea?format=json');
-      var hospitalRes = await http.get(hUrl);
-      if (hospitalRes.statusCode == 200) {
-        var hospitalResData = jsonDecode(hospitalRes.body);
-        donorData.forEach((u) async {
-          var uArea = '${u['area']} India';
-          var url = Uri.parse(
-              'https://nominatim.openstreetmap.org/search/$uArea?format=json');
-          var res = await http.get(url);
-          var resData = jsonDecode(res.body);
-          if (resData.length > 0) {
-            var distance = (await geolocator.distanceBetween(
-                    double.parse(hospitalResData[0]["lat"]),
-                    double.parse(hospitalResData[0]["lon"]),
-                    double.parse(resData[0]["lat"]),
-                    double.parse(resData[0]["lon"])) /
-                1000);
-            if (distance <= 50) {
-              setState(() {
-                filteredData.add(u);
-              });
-              // print("added");
-            }
-          }
-        });
-      } else {
-        print(hospitalRes.statusCode);
-      }
-    }
-    setState(() {
-      isLoaded = true;
-      isLoading = false;
-    });
-  }
 
-  Future<void> didChangeDependencies() async {
+  @override
+  void didChangeDependencies() async {
     if (isInit) {
-      List departments = await BloodService().getDepartments();
       setState(() {
-        depts = departments;
+        bloodGroup = ModalRoute.of(context).settings.arguments as String;
+      });
+      await Provider.of<BloodService>(context, listen: false)
+          .getBloodData(bloodGroup);
+      setState(() {
         isInit = false;
       });
     }
     super.didChangeDependencies();
   }
 
+
   @override
   Widget build(BuildContext context) {
-    List loadedData = ModalRoute.of(context).settings.arguments as List;
-    deptFilteredData = dept == null || dept == "All"
-        ? loadedData[0]
-        : loadedData[0].where((i) => i['dept'] == dept).toList();
+    final bloodService = Provider.of<BloodService>(context);
+    final mediaQuery = MediaQuery.of(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).canvasColor,
-      appBar: AppBar(
-        title: Text(
-          'Find ${loadedData[2]} Blood',
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Filter by Dept : ",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6
-                          .copyWith(fontSize: 14, color: Colors.black),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    DropdownButton<String>(
-                      value: dept == null ? null : dept,
-                      items: depts.map((dynamic v) {
-                        return new DropdownMenuItem<String>(
-                          value: v,
-                          child: Text(v),
-                        );
-                      }).toList(),
-                      onChanged: (newValue) async {
-                        setState(() {
-                          dept = newValue;
-                          isLoaded = false;
-                          deptFilteredData = dept != "All"
-                              ? loadedData[0]
-                                  .where((i) => i['dept'] == dept)
-                                  .toList()
-                              : loadedData[0];
-                        });
-                        if (isAreaFilter) {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          await getDonorData(deptFilteredData, loadedData[1]);
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Show Donors from 50km radius',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6
-                          .copyWith(fontSize: 14, color: Colors.black),
-                    ),
-                    Switch(
-                        value: isAreaFilter,
-                        onChanged: (value) async {
-                          setState(() {
-                            isAreaFilter = value;
-                          });
-                          if (isAreaFilter) {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            await getDonorData(deptFilteredData, loadedData[1]);
-                          }
-                        }),
-                  ],
-                ),
-              ],
-            ),
-            !isLoading
-                ? Container(
-                    // padding: EdgeInsets.all(15),
-                    height: 559,
-                    margin: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                    child: (isAreaFilter
-                            ? filteredData.length > 0
-                            : deptFilteredData.length > 0)
-                        ? ListView.builder(
-                            itemBuilder: (context, index) {
-                              return !isAreaFilter
-                                  ? DonationRequestItem(
-                                      userData: deptFilteredData[index])
-                                  : DonationRequestItem(
-                                      userData: filteredData[index]);
-                            },
-                            itemCount: !isAreaFilter
-                                ? deptFilteredData.length
-                                : filteredData.length)
-                        : Container(
-                            width: double.infinity,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                    height: 200,
-                                    child: Image.asset(
-                                      'assets/images/empty.png',
-                                      fit: BoxFit.cover,
-                                    )),
-                                SizedBox(
-                                  height: 20,
-                                ),
-                                Text("No Requests for You now",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline1
-                                        .copyWith(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.normal)),
-                              ],
-                            ),
-                          ))
-                : Center(child: CircularProgressIndicator()),
+        backgroundColor: Theme.of(context).canvasColor,
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(FiltersScreen.routeName);
+              },
+              icon: Icon(Icons.filter_list),
+            )
           ],
+          title: Text(
+            'Find ${bloodService.bloodGroup} Blood',
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
-      ),
-    );
+        body: bloodService.isLoading==false ? Container(
+            // padding: EdgeInsets.all(15),
+            height: (mediaQuery.size.height -
+                60 -
+                mediaQuery.padding.top) *
+            0.9,
+            margin: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+            child: bloodService.bloodData.length > 0
+                ? ListView.builder(
+                    itemBuilder: (context, index) {
+                      return DonationRequestItem(
+                          userData: bloodService.bloodData[index]);
+                    },
+                    itemCount: bloodService.bloodData.length)
+                : Container(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                            height: 200,
+                            child: Image.asset(
+                              'assets/images/empty.png',
+                              fit: BoxFit.cover,
+                            )),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text("No Donors found",
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline1
+                                .copyWith(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal)),
+                      ],
+                    ),
+                  )) : Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ));
   }
 }

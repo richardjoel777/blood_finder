@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:nss_blood_finder/screens/edit_screen.dart';
+import 'package:nss_blood_finder/screens/filters_screen.dart';
+import 'package:nss_blood_finder/screens/loginScreen.dart';
+import 'package:nss_blood_finder/services/auth.dart';
+import 'package:nss_blood_finder/services/blood.dart';
+import 'package:provider/provider.dart';
+
 import 'package:nss_blood_finder/screens/donateScreen.dart';
 import 'package:nss_blood_finder/screens/requestScreen.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,10 +17,14 @@ Future<void> main() async {
   runApp(MyApp());
 }
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiProvider(
+      providers: [
+      ChangeNotifierProvider(create: (ctx) => BloodService()),
+      ChangeNotifierProvider(create: (ctx) => AuthProvider()),
+    ],
+    child: MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
               primarySwatch: Colors.red,
@@ -41,7 +53,10 @@ class MyApp extends StatelessWidget {
       home: RequestsScreen(),
       routes: {
         DonateScreen.routeName: (ctx) => DonateScreen(),
+        FiltersScreen.routeName: (ctx) => FiltersScreen(),
+        LoginScreen.routeName: (ctx) => LoginScreen(),
+        EditScreen.routeName: (ctx) => EditScreen(),
       },
-    );
+    ));
   }
 }

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.nss_blood_finder">
    <application
-        android:label="nss_blood_finder"
+        android:label="KEC Blood Finder"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
