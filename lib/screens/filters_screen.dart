@@ -162,11 +162,29 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   }),
                 if (!isInit)
                   _buildSelectTile("Filter by Year", currentFilters['year'],
-                      ["All", "1", "2", "3", "4"], (newValue) {
+                      ["All","1", "2", "3", "4", "FACULTY", "PASSED OUT"], (newValue) {
                     setState(() {
                       currentFilters['year'] = newValue;
                     });
                   }),
+                if (!isInit)
+                  _buildSwitchTile(
+                      'Filter by Passed Out',
+                      'Include Passed Out Students',
+                      currentFilters['passedout'], (newvalue) {
+                    setState(() {
+                      currentFilters['passedout'] = newvalue;
+                    });
+                  }),
+                   if (!isInit)
+                  _buildSwitchTile(
+                      'Filter by Faculty',
+                      'Include Faculty',
+                      currentFilters['faculty'], (newvalue) {
+                    setState(() {
+                      currentFilters['faculty'] = newvalue;
+                    });
+                  }),  
                 if (!isInit)
                   _buildSwitchTile(
                       'Filter by Hostellers',

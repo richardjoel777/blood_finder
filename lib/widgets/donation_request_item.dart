@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:numerus/numerus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DonationRequestItem extends StatelessWidget {
@@ -16,8 +15,15 @@ class DonationRequestItem extends StatelessWidget {
         bottom: 10,
       ),
       child: Card(
-        color: userData['lastDonated']!=null ? (DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(
-                userData['lastDonated'].seconds * 1000)).inDays > 90 ? Colors.white : Colors.red[100]) : Colors.white,
+        color: userData['lastDonated'] != null
+            ? (DateTime.now()
+                        .difference(DateTime.fromMillisecondsSinceEpoch(
+                            userData['lastDonated'].seconds * 1000))
+                        .inDays >
+                    90
+                ? Colors.white
+                : Colors.red[100])
+            : Colors.white,
         elevation: 5,
         child: Container(
           height: 160,
@@ -40,9 +46,12 @@ class DonationRequestItem extends StatelessWidget {
                     ),
                     Text(userData['bloodGroup'],
                         style: Theme.of(context).textTheme.headline1),
-                    Text(
-                        '${int.parse(userData['year']).toRomanNumeralString()}-${userData['dept']}-${userData['sec']}',
+                    if(userData['year'] != "FACULTY" && userData['year'] != "PASSED OUT") Text(
+                        '${userData['year'].toString()}-${userData['dept']}-${userData['sec']}',
                         style: Theme.of(context).textTheme.headline1),
+                    if(userData['year'] == "FACULTY" || userData['year'] == "PASSED OUT") Text(
+                        userData['year'],
+                        style: Theme.of(context).textTheme.headline1),    
                     Text(userData['rollno'],
                         style: Theme.of(context).textTheme.headline1),
                     FittedBox(

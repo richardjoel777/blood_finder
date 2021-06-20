@@ -1,49 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
-import 'package:nss_blood_finder/services/blood.dart';
+import 'package:nss_blood_finder/screens/profileScreen.dart';
 import 'package:nss_blood_finder/widgets/main_drawer.dart';
-import 'package:provider/provider.dart';
 
-class EditScreen extends StatefulWidget {
-  static const routeName = '/edit';
+class EditProfileScreen extends StatefulWidget {
+  static const routeName = '/edit-profile-prompt';
   @override
   _EditScreenState createState() => _EditScreenState();
 }
 
-class _EditScreenState extends State<EditScreen> {
+class _EditScreenState extends State<EditProfileScreen> {
   TextEditingController rollno = TextEditingController();
-  DateTime _selectedDate;
 
   showErrorMessage(String msg) {
     Fluttertoast.showToast(msg: msg);
   }
 
-  void _presentDOBDatePicker() {
-    showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(1930),
-            lastDate: DateTime.now())
-        .then((pickedDate) {
-      if (pickedDate == null) return;
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          'Edit Donation Info',
+          'Edit',
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      drawer: MainDrawer(),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -72,31 +55,6 @@ class _EditScreenState extends State<EditScreen> {
                         fontSize: 10.0)),
                 style: TextStyle(fontSize: 14.0)),
             SizedBox(
-              height: 1.0,
-            ),
-            Row(
-              children: [
-                Text(
-                  _selectedDate == null
-                      ? "Donated Date : "
-                      : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
-                  style: Theme.of(context).textTheme.headline1.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                      primary: Theme.of(context).primaryColor),
-                  onPressed: _presentDOBDatePicker,
-                  child: Text(
-                    "Choose Date",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
               height: 10.0,
             ),
             ElevatedButton(
@@ -111,7 +69,7 @@ class _EditScreenState extends State<EditScreen> {
                 height: 50.0,
                 child: Center(
                   child: Text(
-                    "Update Data",
+                    "Load Data",
                     style: Theme.of(context).textTheme.headline6,
                   ),
                 ),
@@ -119,19 +77,12 @@ class _EditScreenState extends State<EditScreen> {
               onPressed: () async {
                 if (rollno.text.isEmpty) {
                   showErrorMessage("Roll no. is mandatory");
-                } else if (_selectedDate == null) {
-                  showErrorMessage("Donated date is mandatory");
                 } else {
-                  await Provider.of<BloodService>(context, listen: false)
-                      .updateDonateInfo(rollno.text.toUpperCase(), _selectedDate)
-                      .then((_) {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/', (route) => false);
-                  });
+                    Navigator.pushNamed(
+                        context, ProfileScreen.routeName, arguments: rollno.text);
                 }
               },
             ),
-
           ],
         ),
       ),

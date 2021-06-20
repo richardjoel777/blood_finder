@@ -1,49 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
 import 'package:nss_blood_finder/services/blood.dart';
 import 'package:nss_blood_finder/widgets/main_drawer.dart';
 import 'package:provider/provider.dart';
 
-class EditScreen extends StatefulWidget {
-  static const routeName = '/edit';
+class CreateReqScreen extends StatefulWidget {
+  static const routeName = '/create-request';
   @override
   _EditScreenState createState() => _EditScreenState();
 }
 
-class _EditScreenState extends State<EditScreen> {
-  TextEditingController rollno = TextEditingController();
-  DateTime _selectedDate;
+class _EditScreenState extends State<CreateReqScreen> {
+  TextEditingController reqId = TextEditingController();
 
   showErrorMessage(String msg) {
     Fluttertoast.showToast(msg: msg);
   }
 
-  void _presentDOBDatePicker() {
-    showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(1930),
-            lastDate: DateTime.now())
-        .then((pickedDate) {
-      if (pickedDate == null) return;
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          'Edit Donation Info',
+          'Create Request',
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      drawer: MainDrawer(),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -60,10 +44,10 @@ class _EditScreenState extends State<EditScreen> {
               height: 20.0,
             ),
             TextField(
-                controller: rollno,
+                controller: reqId,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                    labelText: "Roll no.",
+                    labelText: "Request ID",
                     labelStyle: TextStyle(
                         fontSize: 14.0, fontFamily: 'RobotoCondensed'),
                     hintStyle: TextStyle(
@@ -71,31 +55,6 @@ class _EditScreenState extends State<EditScreen> {
                         fontWeight: FontWeight.bold,
                         fontSize: 10.0)),
                 style: TextStyle(fontSize: 14.0)),
-            SizedBox(
-              height: 1.0,
-            ),
-            Row(
-              children: [
-                Text(
-                  _selectedDate == null
-                      ? "Donated Date : "
-                      : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
-                  style: Theme.of(context).textTheme.headline1.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                      primary: Theme.of(context).primaryColor),
-                  onPressed: _presentDOBDatePicker,
-                  child: Text(
-                    "Choose Date",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
             SizedBox(
               height: 10.0,
             ),
@@ -111,27 +70,19 @@ class _EditScreenState extends State<EditScreen> {
                 height: 50.0,
                 child: Center(
                   child: Text(
-                    "Update Data",
+                    "Add Request",
                     style: Theme.of(context).textTheme.headline6,
                   ),
                 ),
               ),
               onPressed: () async {
-                if (rollno.text.isEmpty) {
-                  showErrorMessage("Roll no. is mandatory");
-                } else if (_selectedDate == null) {
-                  showErrorMessage("Donated date is mandatory");
+                if (reqId.text.isEmpty) {
+                  showErrorMessage("Request ID is mandatory");
                 } else {
-                  await Provider.of<BloodService>(context, listen: false)
-                      .updateDonateInfo(rollno.text.toUpperCase(), _selectedDate)
-                      .then((_) {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/', (route) => false);
-                  });
+                  await Provider.of<BloodService>(context, listen: false).createRequest(reqId.text).then((value) => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false));
                 }
               },
             ),
-
           ],
         ),
       ),

@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:nss_blood_finder/screens/addAccountScreen.dart';
+import 'package:nss_blood_finder/screens/addData.dart';
+import 'package:nss_blood_finder/screens/createReqScreen.dart';
+import 'package:nss_blood_finder/screens/edit_profile.dart';
 import 'package:nss_blood_finder/screens/edit_screen.dart';
 import 'package:nss_blood_finder/screens/loginScreen.dart';
+import 'package:nss_blood_finder/screens/registerScreen.dart';
 import 'package:nss_blood_finder/services/auth.dart';
+import 'package:nss_blood_finder/services/blood.dart';
 import 'package:provider/provider.dart';
 
-class MainDrawer extends StatelessWidget {
+class MainDrawer extends StatefulWidget {
+  @override
+  _MainDrawerState createState() => _MainDrawerState();
+}
+
+class _MainDrawerState extends State<MainDrawer> {
+
+  List admins = [];
+  bool isInit = true;
+
   Widget buildListTile(String title, IconData icon, Function tapHandler) {
     return ListTile(
       leading: Icon(
@@ -21,6 +36,17 @@ class MainDrawer extends StatelessWidget {
       ),
       onTap: tapHandler,
     );
+  }
+
+  @override
+  void didChangeDependencies() async {
+    if(isInit){
+      admins = await Provider.of<BloodService>(context, listen: false).getAdmins();
+      isInit = false;
+      setState(() {
+      });
+    }
+    super.didChangeDependencies();
   }
 
   @override
@@ -46,15 +72,15 @@ class MainDrawer extends StatelessWidget {
           SizedBox(
             height: 20,
           ),
-          buildListTile(
+          if(auth.currentUser != null) buildListTile(
             'Home',
-            Icons.home,
+           Icons.home,
             () {
               Navigator.of(context)
                   .pushNamedAndRemoveUntil('/', (route) => false);
             },
           ),
-          if(auth.currentUser != null) buildListTile(
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile(
             'Edit Donation Detail',
             Icons.edit,
             () {
@@ -66,12 +92,31 @@ class MainDrawer extends StatelessWidget {
             Navigator.of(context).pushNamed(
                 LoginScreen.routeName,);
           }),
-          
+          if(auth.currentUser == null) buildListTile("Register", Icons.login, () {
+            Navigator.of(context).pushNamed(
+                RegisterScreen.routeName,);
+          }),
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Edit Profile", Icons.edit, () {
+            Navigator.of(context).pushNamed(
+                EditProfileScreen.routeName,);
+          }),
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Add Profile", Icons.add, () {
+            Navigator.of(context).pushNamed(
+                AddDataScreen.routeName,);
+          }),
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Add Account", Icons.create, () {
+            Navigator.of(context).pushNamed(
+                AddAccountScreen.routeName,);
+          }),
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Create Request", Icons.create, () {
+            Navigator.of(context).pushNamed(
+                CreateReqScreen.routeName,);
+          }),
           if(auth.currentUser != null) buildListTile("Logout", Icons.logout, () async {
             await Provider.of<AuthProvider>(context, listen: false).signOut().then((_) =>
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/', (route) => false));
-          })
+                    .pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false));
+          }),
         ],
       ),
     );

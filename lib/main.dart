@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:nss_blood_finder/screens/addAccountScreen.dart';
+import 'package:nss_blood_finder/screens/createReqScreen.dart';
+import 'package:nss_blood_finder/screens/registerScreen.dart';
+import 'package:nss_blood_finder/screens/requestScreen.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:nss_blood_finder/screens/addData.dart';
+import 'package:nss_blood_finder/screens/edit_profile.dart';
 import 'package:nss_blood_finder/screens/edit_screen.dart';
 import 'package:nss_blood_finder/screens/filters_screen.dart';
 import 'package:nss_blood_finder/screens/loginScreen.dart';
+import 'package:nss_blood_finder/screens/profileScreen.dart';
 import 'package:nss_blood_finder/services/auth.dart';
 import 'package:nss_blood_finder/services/blood.dart';
-import 'package:provider/provider.dart';
-
 import 'package:nss_blood_finder/screens/donateScreen.dart';
-import 'package:nss_blood_finder/screens/requestScreen.dart';
 
 
 Future<void> main() async {
@@ -50,12 +56,21 @@ class MyApp extends StatelessWidget {
                     fontFamily: 'RobotoCondensed',
                     fontWeight: FontWeight.bold,
                   ))),
-      home: RequestsScreen(),
+      initialRoute: FirebaseAuth.instance.currentUser == null
+              ? LoginScreen.routeName
+              : '/',
       routes: {
+        '/': (ctx) => RequestsScreen(),
         DonateScreen.routeName: (ctx) => DonateScreen(),
         FiltersScreen.routeName: (ctx) => FiltersScreen(),
         LoginScreen.routeName: (ctx) => LoginScreen(),
         EditScreen.routeName: (ctx) => EditScreen(),
+        ProfileScreen.routeName: (ctx) => ProfileScreen(),
+        EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
+        RegisterScreen.routeName: (ctx) => RegisterScreen(),
+        AddDataScreen.routeName: (ctx) => AddDataScreen(),
+        CreateReqScreen.routeName: (ctx) => CreateReqScreen(),
+        AddAccountScreen.routeName: (ctx) => AddAccountScreen(),
       },
     ));
   }

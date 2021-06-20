@@ -12,6 +12,8 @@ class BloodService with ChangeNotifier {
     'year': 'All',
     'hostel': false,
     'willing': true,
+    'passedout': false,
+    'faculty': false,
   };
   bool _isLoading = false;
   String _bloodGroup;
@@ -40,27 +42,49 @@ class BloodService with ChangeNotifier {
     // print('BLOOD $bloodGroup');
     List temp = [];
     var fb = FirebaseFirestore.instance;
-    await fb
-        .collection("data")
-        .where("bloodGroup", isEqualTo: bloodGroup)
-        .get()
-        .then((snapshots) {
-      snapshots.docs.forEach((doc) {
-        temp.add(doc.data());
-        if (temp.length == snapshots.size) {
-          temp.sort((a,b) => a['lastDonated'].seconds.compareTo(b['lastDonated'].seconds));
-          _data = temp;
-          _perData = temp;
-          _areaFilteredData = temp;
-          _bloodGroup = bloodGroup;
-          // print(_data);
-          setFilters(_perData);
-          // print(_data);
-          _isLoading = false;
-          notifyListeners();
-        }
+    if (bloodGroup != "All") {
+      await fb
+          .collection("data")
+          .where("bloodGroup", isEqualTo: bloodGroup)
+          .get()
+          .then((snapshots) {
+        snapshots.docs.forEach((doc) {
+          temp.add(doc.data());
+          if (temp.length == snapshots.size) {
+            temp.sort((a, b) =>
+                a['lastDonated'].seconds.compareTo(b['lastDonated'].seconds));
+            _data = temp;
+            _perData = temp;
+            _areaFilteredData = temp;
+            _bloodGroup = bloodGroup;
+            // print(_data);
+            setFilters(_perData);
+            // print(_data);
+            _isLoading = false;
+            notifyListeners();
+          }
+        });
       });
-    });
+    } else {
+      await fb.collection("data").get().then((snapshots) {
+        snapshots.docs.forEach((doc) {
+          temp.add(doc.data());
+          if (temp.length == snapshots.size) {
+            temp.sort((a, b) =>
+                a['lastDonated'].seconds.compareTo(b['lastDonated'].seconds));
+            _data = temp;
+            _perData = temp;
+            _areaFilteredData = temp;
+            _bloodGroup = bloodGroup;
+            // print(_data);
+            setFilters(_perData);
+            // print(_data);
+            _isLoading = false;
+            notifyListeners();
+          }
+        });
+      });
+    }
   }
 
   Future<void> updateDonateInfo(String rollno, DateTime date) async {
@@ -82,19 +106,6 @@ class BloodService with ChangeNotifier {
     }
   }
 
-  // Future<void> updateDummyDate() async {
-  //   try {
-  //     var fb = FirebaseFirestore.instance;
-  //     await fb.collection("data").get().then((snapshots) async {
-  //       snapshots.docs.forEach((doc) async {
-  //         await fb.collection("data").doc(doc.id).update({'lastDonated': DateTime(2021,1,1)});
-  //       });
-  //     });
-  //   } catch (ex) {
-  //     print(ex.message);
-  //   }
-  // }
-
   Future<void> getDonorData(String hospitalArea) async {
     int i = 0;
     // print(hospitalArea);
@@ -108,18 +119,12 @@ class BloodService with ChangeNotifier {
     if (hospitalRes.statusCode == 200) {
       var hospitalResData = jsonDecode(hospitalRes.body);
       _data.forEach((u) async {
-        try {
-          var uArea = '${u['area']} India';
-          var url = Uri.parse(
-              'https://nominatim.openstreetmap.org/search/$uArea?format=json');
-          var res = await http.get(url);
-          var resData = jsonDecode(res.body);
-          if (resData.length > 0) {
+          if (u['lat'] != null) {
             var distance = (await geolocator.distanceBetween(
                     double.parse(hospitalResData[0]["lat"]),
                     double.parse(hospitalResData[0]["lon"]),
-                    double.parse(resData[0]["lat"]),
-                    double.parse(resData[0]["lon"])) /
+                    double.parse(u['lat']),
+                    double.parse(u['long'])) /
                 1000);
             if (distance <= 50) {
               filteredData.add(u);
@@ -127,23 +132,15 @@ class BloodService with ChangeNotifier {
           } else {
             filteredData.add(u);
           }
-        } on Exception catch (_) {
-          i++;
-          // print(e);
-        }
         i++;
-        // print(i);
         if (i == _data.length) {
           _data = filteredData;
           _areaFilteredData = filteredData;
-          // print("BYE");
-          // print(_data);
           _isLoading = false;
           notifyListeners();
         }
       });
     } else {
-      // print("NOT WORKING");
       Fluttertoast.showToast(msg: "Something went wrong");
     }
   }
@@ -154,6 +151,18 @@ class BloodService with ChangeNotifier {
         return false;
       }
       if (_filters['year'] != 'All' && d['year'] != _filters['year']) {
+        return false;
+      }
+      if (_filters['passedout'] == false && d['year'] == "PASSED OUT") {
+        return false;
+      }
+      if (_filters['faculty'] == false && d['year'] == "FACULTY") {
+        return false;
+      }
+      if ((_filters['passedout']) && d['year'] != "PASSED OUT") {
+        return false;
+      }
+      if ((_filters['faculty']) && d['year'] != "FACULTY") {
         return false;
       }
       if ((_filters['willing']) && d['isWilling'] == false) {
@@ -170,8 +179,130 @@ class BloodService with ChangeNotifier {
 
   Future<List> getBloodGroups() async {
     var fb = FirebaseFirestore.instance;
-    var doc = await fb.collection("data").doc("bloodGroups").get();
+    var doc = await fb.collection("blooddata").doc("blooddata").get();
     return doc.data()['groups'];
+  }
+
+  Future<List> getRequests() async {
+    var fb = FirebaseFirestore.instance;
+    var doc = await fb.collection("blooddata").doc("blooddata").get();
+    return doc.data()['requests'];
+  }
+
+  Future<List> getDepartments() async {
+    var fb = FirebaseFirestore.instance;
+    var doc = await fb.collection("blooddata").doc("blooddata").get();
+    return doc.data()['departments'];
+  }
+
+  Future<Map> getUserData(String rollno) async {
+    String docId;
+    Map res;
+    try {
+      //print("HI HELLO");
+      var fb = FirebaseFirestore.instance;
+      await fb
+          .collection("data")
+          .limit(1)
+          .where("rollno", isEqualTo: rollno)
+          .get()
+          .then((snapshots) async {
+        docId = snapshots.docs[0].id;
+        await fb.collection("data").doc(docId).get().then((value) {
+          res = value.data();
+        });
+      });
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+    return res;
+  }
+
+  Future<void> createRequest(String reqId) async {
+    try {
+      var fb = FirebaseFirestore.instance;
+      await fb.collection("blooddata").doc("blooddata").get().then((doc) async {
+        List requests = doc.data()['requests'];
+        requests.add({'id': reqId, 'time': DateTime.now()});
+        await fb.collection("blooddata").doc("blooddata").update({'requests' : requests}).then((value) => Fluttertoast.showToast(msg: "Request Added Successfully"));
+      });
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+  }
+
+  Future<void> updateUserData(name, bloodgroup, gender, dept, year, sec, rollno,
+      phone1, phone2, address, isWilling, isDayScholar) async {
+    String docId;
+    try {
+      var fb = FirebaseFirestore.instance;
+      await fb
+          .collection("data")
+          .limit(1)
+          .where("rollno", isEqualTo: rollno)
+          .get()
+          .then((snapshots) async {
+        docId = snapshots.docs[0].id;
+        await fb.collection("data").doc(docId).update({
+          'name': name,
+          'bloodGroup': bloodgroup,
+          'sex': gender,
+          'dept': dept,
+          'year': year,
+          'sec': sec,
+          'rollno': rollno,
+          'phone1': phone1,
+          'phone2': phone2,
+          'address': address,
+          'isWilling': isWilling,
+          'isDayScholar': isDayScholar,
+        });
+        Fluttertoast.showToast(msg: "Updated successfuly");
+      });
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+  }
+
+  Future<void> addUserData(name, bloodgroup, gender, dept, year, sec, rollno,
+      phone1, phone2, address, isWilling, isDayScholar) async {
+    try {
+      var fb = FirebaseFirestore.instance;
+      await fb.collection("data").add({
+        'name': name,
+        'bloodGroup': bloodgroup,
+        'sex': gender,
+        'dept': dept,
+        'year': year,
+        'sec': sec,
+        'rollno': rollno,
+        'phone1': phone1,
+        'phone2': phone2,
+        'address': address,
+        'isWilling': isWilling,
+        'isDayScholar': isDayScholar,
+        'lastDonated': DateTime(2021, 1, 1),
+      });
+      Fluttertoast.showToast(msg: "Added successfuly");
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+  }
+
+  Future<List> getAdmins() async {
+    List admins = [];
+    try {
+      await FirebaseFirestore.instance
+          .collection("admins")
+          .doc("admins")
+          .get()
+          .then((value) {
+        admins = value.data()['admins'];
+      });
+      return admins;
+    } catch (ex) {
+      return admins;
+    }
   }
 
   void changeFilter(Map newFilters) async {
@@ -194,11 +325,5 @@ class BloodService with ChangeNotifier {
       _isLoading = false;
     }
     notifyListeners();
-  }
-
-  Future<List> getDepartments() async {
-    var fb = FirebaseFirestore.instance;
-    var doc = await fb.collection("data").doc("bloodGroups").get();
-    return doc.data()['departments'];
   }
 }

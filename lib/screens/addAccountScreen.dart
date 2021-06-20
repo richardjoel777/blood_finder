@@ -1,5 +1,4 @@
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:nss_blood_finder/screens/registerScreen.dart';
 import 'package:nss_blood_finder/services/auth.dart';
 import 'package:provider/provider.dart';
 
@@ -7,16 +6,29 @@ import 'package:flutter/material.dart';
 
 import '../widgets/main_drawer.dart';
 
-class LoginScreen extends StatelessWidget {
-  static const String routeName = '/login';
+class AddAccountScreen extends StatefulWidget {
+  static const String routeName = '/add-account';
+
+  @override
+  _AddAccountScreenState createState() => _AddAccountScreenState();
+}
+
+class _AddAccountScreenState extends State<AddAccountScreen> {
+  @override
+
   @override
   Widget build(BuildContext context) {
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
+    TextEditingController email = TextEditingController();
+    TextEditingController password = TextEditingController();
     final _auth = Provider.of<AuthProvider>(context);
     return Scaffold(
-      drawer: MainDrawer(),
-      appBar: AppBar(title: Text("Login", style: Theme.of(context).textTheme.headline6,),),
+        drawer: MainDrawer(),
+        appBar: AppBar(
+          title: Text(
+            "Create Account",
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
           child: Padding(
@@ -36,7 +48,7 @@ class LoginScreen extends StatelessWidget {
                   height: 20.0,
                 ),
                 Text(
-                  "Login",
+                  "Create Account",
                   style: Theme.of(context)
                       .textTheme
                       .headline6
@@ -92,7 +104,7 @@ class LoginScreen extends StatelessWidget {
                           height: 50.0,
                           child: Center(
                             child: Text(
-                              "Login",
+                              "Create",
                               style: Theme.of(context)
                                   .textTheme
                                   .headline6
@@ -101,32 +113,25 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
                         onPressed: () async {
-                          dynamic result = await _auth.signInEmail(
-                              email.text, password.text);
-                          if (result == null) {
-                            Fluttertoast.showToast(msg: "Something went wrong");
+                          print(_auth.passcode);
+                          if (email.text.contains("@") && password.text.length >= 8){
+                            dynamic result = await _auth.signupEmail(
+                                email.text, password.text);
+                            if (result == null) {
+                              Fluttertoast.showToast(
+                                  msg: "Something went wrong");
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: "Registered successfully");
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                  '/', (route) => false);
+                            }
                           } else {
                             Fluttertoast.showToast(
-                                msg: "Logged in successfully");
-                            Navigator.of(context)
-                                .pushNamedAndRemoveUntil('/', (route) => false);
+                                msg: "Invalid Email or Password");
                           }
                         },
                       ),
-                      TextButton(
-                  style: TextButton.styleFrom(primary: Colors.black),
-                  onPressed: () {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        RegisterScreen.routeName, (route) => false);
-                  },
-                  child: Text(
-                    "Don't have an account? signup here!",
-                    style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "Raleway"),
-                  ),
-                )
                     ],
                   ),
                 ),
