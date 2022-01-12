@@ -244,7 +244,27 @@ class BloodService with ChangeNotifier {
     return 0;
   }
 
-  
+  static Future<void> bulkUpdate(List rollnos, DateTime date) async {
+    try {
+      var fb = FirebaseFirestore.instance;
+      for (int i = 0; i < rollnos.length; i++) {
+        // print(rollnos[i]);
+        var response = await fb
+            .collection("userData")
+            .where("rollno", isEqualTo: rollnos[i])
+            .get();
+        var batch = fb.batch();
+        response.docs.forEach((doc) {
+          print(doc.id);
+          var docRef = fb.collection("userData").doc(doc.id);
+          batch.update(docRef, {'lastDonated': date});
+        });
+        await batch.commit();
+      }
+    } catch (ex) {
+      print(ex);
+    }
+  }
 
   Future<void> createRequest(String reqId) async {
     try {
