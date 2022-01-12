@@ -20,6 +20,7 @@ class BloodService with ChangeNotifier {
   List _data = [];
   List _perData = [];
   List _areaFilteredData = [];
+  List _admins = [];
 
   Map<String, Object> get filters {
     return {..._filters};
@@ -37,6 +38,10 @@ class BloodService with ChangeNotifier {
     return [..._data];
   }
 
+  List get admins {
+    return [..._admins];
+  }
+
   Future<void> getBloodData(String bloodGroup) async {
     _isLoading = true;
     // print('BLOOD $bloodGroup');
@@ -44,7 +49,7 @@ class BloodService with ChangeNotifier {
     var fb = FirebaseFirestore.instance;
     if (bloodGroup != "All") {
       await fb
-          .collection("data")
+          .collection("userData")
           .where("bloodGroup", isEqualTo: bloodGroup)
           .get()
           .then((snapshots) {
@@ -66,7 +71,7 @@ class BloodService with ChangeNotifier {
         });
       });
     } else {
-      await fb.collection("data").get().then((snapshots) {
+      await fb.collection("userData").get().then((snapshots) {
         snapshots.docs.forEach((doc) {
           temp.add(doc.data());
           if (temp.length == snapshots.size) {
@@ -92,13 +97,16 @@ class BloodService with ChangeNotifier {
     try {
       var fb = FirebaseFirestore.instance;
       await fb
-          .collection("data")
+          .collection("userData")
           .limit(1)
           .where("rollno", isEqualTo: rollno)
           .get()
           .then((snapshots) async {
         docId = snapshots.docs[0].id;
-        await fb.collection("data").doc(docId).update({'lastDonated': date});
+        await fb
+            .collection("userData")
+            .doc(docId)
+            .update({'lastDonated': date});
         Fluttertoast.showToast(msg: "Updated successfuly");
       });
     } catch (ex) {
@@ -119,19 +127,19 @@ class BloodService with ChangeNotifier {
     if (hospitalRes.statusCode == 200) {
       var hospitalResData = jsonDecode(hospitalRes.body);
       _data.forEach((u) async {
-          if (u['lat'] != null) {
-            var distance = (await geolocator.distanceBetween(
-                    double.parse(hospitalResData[0]["lat"]),
-                    double.parse(hospitalResData[0]["lon"]),
-                    double.parse(u['lat']),
-                    double.parse(u['long'])) /
-                1000);
-            if (distance <= 50) {
-              filteredData.add(u);
-            }
-          } else {
+        if (u['lat'] != null) {
+          var distance = (await geolocator.distanceBetween(
+                  double.parse(hospitalResData[0]["lat"]),
+                  double.parse(hospitalResData[0]["lon"]),
+                  double.parse(u['lat']),
+                  double.parse(u['long'])) /
+              1000);
+          if (distance <= 50) {
             filteredData.add(u);
           }
+        } else {
+          filteredData.add(u);
+        }
         i++;
         if (i == _data.length) {
           _data = filteredData;
@@ -202,13 +210,13 @@ class BloodService with ChangeNotifier {
       //print("HI HELLO");
       var fb = FirebaseFirestore.instance;
       await fb
-          .collection("data")
+          .collection("userData")
           .limit(1)
           .where("rollno", isEqualTo: rollno)
           .get()
           .then((snapshots) async {
         docId = snapshots.docs[0].id;
-        await fb.collection("data").doc(docId).get().then((value) {
+        await fb.collection("userData").doc(docId).get().then((value) {
           res = value.data();
         });
       });
@@ -218,42 +226,64 @@ class BloodService with ChangeNotifier {
     return res;
   }
 
+  static Future<String> getIdofUser(String rollno) async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection("userData")
+        .where("rollno", isEqualTo: rollno)
+        .get();
+    return snapshot.docs.first.id;
+  }
+
+  static Future<void> updateLastCalled(String rollno) async {
+    var fb = FirebaseFirestore.instance;
+    var id = await getIdofUser(rollno);
+    print(id);
+    await fb.collection("userData").doc(id).update({
+      'lastCalled': DateTime.now(),
+    });
+    return 0;
+  }
+
+  
+
   Future<void> createRequest(String reqId) async {
     try {
       var fb = FirebaseFirestore.instance;
       await fb.collection("blooddata").doc("blooddata").get().then((doc) async {
         List requests = doc.data()['requests'];
         requests.add({'id': reqId, 'time': DateTime.now()});
-        await fb.collection("blooddata").doc("blooddata").update({'requests' : requests}).then((value) => Fluttertoast.showToast(msg: "Request Added Successfully"));
+        await fb
+            .collection("blooddata")
+            .doc("blooddata")
+            .update({'requests': requests}).then((value) =>
+                Fluttertoast.showToast(msg: "Request Added Successfully"));
       });
     } catch (ex) {
       Fluttertoast.showToast(msg: ex.message);
     }
   }
 
-  Future<void> updateUserData(name, bloodgroup, gender, dept, year, sec, rollno,
-      phone1, phone2, address, isWilling, isDayScholar) async {
+  Future<void> updateUserData(name, bloodgroup, dept, year, rollno, phone1,
+      phone2, address, isWilling, isDayScholar) async {
     String docId;
     try {
       var fb = FirebaseFirestore.instance;
       await fb
-          .collection("data")
+          .collection("userData")
           .limit(1)
           .where("rollno", isEqualTo: rollno)
           .get()
           .then((snapshots) async {
         docId = snapshots.docs[0].id;
-        await fb.collection("data").doc(docId).update({
+        await fb.collection("userData").doc(docId).update({
           'name': name,
           'bloodGroup': bloodgroup,
-          'sex': gender,
           'dept': dept,
           'year': year,
-          'sec': sec,
           'rollno': rollno,
           'phone1': phone1,
           'phone2': phone2,
-          'address': address,
+          'area': address,
           'isWilling': isWilling,
           'isDayScholar': isDayScholar,
         });
@@ -264,24 +294,22 @@ class BloodService with ChangeNotifier {
     }
   }
 
-  Future<void> addUserData(name, bloodgroup, gender, dept, year, sec, rollno,
-      phone1, phone2, address, isWilling, isDayScholar) async {
+  Future<void> addUserData(name, bloodgroup, dept, year, rollno, phone1, phone2,
+      address, isWilling, isDayScholar) async {
     try {
       var fb = FirebaseFirestore.instance;
-      await fb.collection("data").add({
+      await fb.collection("userData").add({
         'name': name,
         'bloodGroup': bloodgroup,
-        'sex': gender,
         'dept': dept,
         'year': year,
-        'sec': sec,
         'rollno': rollno,
         'phone1': phone1,
         'phone2': phone2,
-        'address': address,
+        'area': address,
         'isWilling': isWilling,
         'isDayScholar': isDayScholar,
-        'lastDonated': DateTime(2021, 1, 1),
+        'lastDonated': DateTime(2020, 12, 1),
       });
       Fluttertoast.showToast(msg: "Added successfuly");
     } catch (ex) {
@@ -289,7 +317,7 @@ class BloodService with ChangeNotifier {
     }
   }
 
-  Future<List> getAdmins() async {
+  Future<void> getAdmins() async {
     List admins = [];
     try {
       await FirebaseFirestore.instance
@@ -299,9 +327,9 @@ class BloodService with ChangeNotifier {
           .then((value) {
         admins = value.data()['admins'];
       });
-      return admins;
+      _admins = admins;
     } catch (ex) {
-      return admins;
+      print(ex);
     }
   }
 

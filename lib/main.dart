@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nss_blood_finder/screens/addAccountScreen.dart';
+import 'package:nss_blood_finder/screens/bulkDateUpdate.dart';
 import 'package:nss_blood_finder/screens/createReqScreen.dart';
 import 'package:nss_blood_finder/screens/registerScreen.dart';
 import 'package:nss_blood_finder/screens/requestScreen.dart';
@@ -34,7 +35,6 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
               primarySwatch: Colors.red,
-              accentColor: Colors.yellowAccent,
               canvasColor: Color.fromRGBO(255, 2254, 229, 1),
               fontFamily: 'Raleway',
               textTheme: ThemeData.light().textTheme.copyWith(
@@ -71,7 +71,9 @@ class MyApp extends StatelessWidget {
         AddDataScreen.routeName: (ctx) => AddDataScreen(),
         CreateReqScreen.routeName: (ctx) => CreateReqScreen(),
         AddAccountScreen.routeName: (ctx) => AddAccountScreen(),
+        BulkDateUpdate.routeName: (ctx) => BulkDateUpdate(),
       },
+      debugShowCheckedModeBanner: false,
     ));
   }
 }

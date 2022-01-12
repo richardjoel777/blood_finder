@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nss_blood_finder/screens/addAccountScreen.dart';
 import 'package:nss_blood_finder/screens/addData.dart';
+import 'package:nss_blood_finder/screens/bulkDateUpdate.dart';
 import 'package:nss_blood_finder/screens/createReqScreen.dart';
 import 'package:nss_blood_finder/screens/edit_profile.dart';
 import 'package:nss_blood_finder/screens/edit_screen.dart';
@@ -16,7 +17,6 @@ class MainDrawer extends StatefulWidget {
 }
 
 class _MainDrawerState extends State<MainDrawer> {
-
   List admins = [];
   bool isInit = true;
 
@@ -39,11 +39,12 @@ class _MainDrawerState extends State<MainDrawer> {
   }
 
   @override
-  void didChangeDependencies() async {
-    if(isInit){
-      admins = await Provider.of<BloodService>(context, listen: false).getAdmins();
-      isInit = false;
+  void didChangeDependencies() {
+    if(isInit)
+    {
+      admins = Provider.of<BloodService>(context, listen: false).admins;
       setState(() {
+        isInit = false;
       });
     }
     super.didChangeDependencies();
@@ -99,6 +100,10 @@ class _MainDrawerState extends State<MainDrawer> {
           if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Edit Profile", Icons.edit, () {
             Navigator.of(context).pushNamed(
                 EditProfileScreen.routeName,);
+          }),
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Bulk Date Update", Icons.edit, () {
+            Navigator.of(context).pushNamed(
+                BulkDateUpdate.routeName,);
           }),
           if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Add Profile", Icons.add, () {
             Navigator.of(context).pushNamed(

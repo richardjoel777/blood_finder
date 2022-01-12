@@ -20,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void didChangeDependencies() async {
     if (isInit) {
       await Provider.of<AuthProvider>(context, listen: false).getPassCode();
-      await Provider.of<AuthProvider>(context, listen: false).getAuthUsers();
+      // await Provider.of<AuthProvider>(context, listen: false).getAuthUsers();
       setState(() {
         isInit = false;
       });
@@ -158,8 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         onPressed: () async {
                           print(_auth.passcode);
-                          if (_auth.authemails.contains(email.text) && _auth.authmobs.contains(phone.text) &&
-                              secretCode.text == _auth.passcode) {
+                          if (secretCode.text == _auth.passcode) {
                             dynamic result = await _auth.signupEmail(
                                 email.text, password.text);
                             if (result == null) {

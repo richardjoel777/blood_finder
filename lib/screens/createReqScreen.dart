@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nss_blood_finder/services/blood.dart';
 import 'package:nss_blood_finder/widgets/main_drawer.dart';
@@ -11,8 +14,6 @@ class CreateReqScreen extends StatefulWidget {
 }
 
 class _EditScreenState extends State<CreateReqScreen> {
-  TextEditingController reqId = TextEditingController();
-
   showErrorMessage(String msg) {
     Fluttertoast.showToast(msg: msg);
   }
@@ -41,22 +42,7 @@ class _EditScreenState extends State<CreateReqScreen> {
               alignment: Alignment.center,
             ),
             SizedBox(
-              height: 20.0,
-            ),
-            TextField(
-                controller: reqId,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                    labelText: "Request ID",
-                    labelStyle: TextStyle(
-                        fontSize: 14.0, fontFamily: 'RobotoCondensed'),
-                    hintStyle: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10.0)),
-                style: TextStyle(fontSize: 14.0)),
-            SizedBox(
-              height: 10.0,
+              height: 30.0,
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -76,11 +62,15 @@ class _EditScreenState extends State<CreateReqScreen> {
                 ),
               ),
               onPressed: () async {
-                if (reqId.text.isEmpty) {
-                  showErrorMessage("Request ID is mandatory");
-                } else {
-                  await Provider.of<BloodService>(context, listen: false).createRequest(reqId.text).then((value) => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false));
-                }
+                String id = (Random().nextInt(90000) + 10000).toString();
+                await Provider.of<BloodService>(context, listen: false)
+                    .createRequest(id)
+                    .then((_) {
+                  Clipboard.setData(ClipboardData(text: id));
+                  Fluttertoast.showToast(msg: "Request Id copied to Clipboard");
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil('/', (route) => false);
+                });
               },
             ),
           ],

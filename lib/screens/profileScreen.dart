@@ -22,15 +22,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       new TextEditingController();
   String bloodgroup;
   String dept;
-  String gender;
   String year;
-  String sec;
   bool isDayScholar = false;
   bool isWilling = false;
   List bloodGroups = [];
   List years = ["1", "2", "3", "4", "FACULTY", "PASSED OUT"];
   List departments = [];
-  List sections = ["A", "B", "C", "D"];
   @override
   void didChangeDependencies() async {
     if (isInit) {
@@ -48,12 +45,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bloodgroup = userData['bloodGroup'];
         dept = userData['dept'];
         year = userData['year'];
-        sec = userData['sec'];
-        gender = userData['sex'];
         isWilling = userData['isWilling'];
         isDayScholar = userData['isDayScholar'];
-        isInit = false;
-        setState(() {});
+        setState(() {
+          isInit = false;
+        });
       } else {
         Navigator.of(context).pop();
       }
@@ -76,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
-        body: SingleChildScrollView(
+        body: isInit ? Center(child : CircularProgressIndicator()) : SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(8.0),
             child: Column(
@@ -161,40 +157,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Row(
                         children: [
                           Text(
-                            "Gender : ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline1
-                                .copyWith(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.black),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          DropdownButton<String>(
-                            value: gender != null ? gender : null,
-                            items: ["MALE", "FEMALE"].map((dynamic v) {
-                              return new DropdownMenuItem<String>(
-                                value: v,
-                                child: Text(v),
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                gender = newValue;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 1.0,
-                      ),
-                      Row(
-                        children: [
-                          Text(
                             "Department : ",
                             style: Theme.of(context)
                                 .textTheme
@@ -252,40 +214,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onChanged: (newValue) {
                               setState(() {
                                 year = newValue;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 1.0,
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            "Section : ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline1
-                                .copyWith(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.black),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          DropdownButton<String>(
-                            value: sec != null ? sec : null,
-                            items: sections.map((dynamic v) {
-                              return new DropdownMenuItem<String>(
-                                value: v,
-                                child: Text(v),
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                sec = newValue;
                               });
                             },
                           ),
@@ -426,22 +354,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             } else if (phone1TextEditingController.text.length <
                                 10) {
                               showErrorMessage("Enter valid mobile no.");
-                            } else if (phone2TextEditingController
-                                .text.isEmpty) {
-                              showErrorMessage("Enter valid mobile no.");
                             } else if (addressTextEditingController
                                 .text.isEmpty) {
                               showErrorMessage("Address is mandatory");
                             } else if (bloodgroup == null) {
                               showErrorMessage("Blood Group is mandatory");
-                            } else if (gender == null) {
-                              showErrorMessage("Gender is mandatory");
                             } else if (dept == null) {
                               showErrorMessage("Department is mandatory");
                             } else if (year == null) {
                               showErrorMessage("Year is mandatory");
-                            } else if (sec == null) {
-                              showErrorMessage("Section is mandatory");
                             } else if (isWilling == null) {
                               showErrorMessage("Is Willing is mandatory");
                             } else if (isDayScholar == null) {
@@ -450,10 +371,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               await bloodService.updateUserData(
                                 nameTextEditingController.text,
                                 bloodgroup,
-                                gender,
                                 dept,
                                 year,
-                                sec,
                                 rollnoTextEditingController.text,
                                 phone1TextEditingController.text,
                                 phone2TextEditingController.text,
@@ -476,16 +395,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             } else if (phone1TextEditingController.text.length <
                                 10) {
                               showErrorMessage("Enter valid mobile no.");
-                            } else if (phone2TextEditingController
-                                .text.isEmpty) {
-                              showErrorMessage("Enter valid mobile no.");
                             } else if (addressTextEditingController
                                 .text.isEmpty) {
                               showErrorMessage("Address is mandatory");
                             } else if (bloodgroup == null) {
                               showErrorMessage("Blood Group is mandatory");
-                            } else if (gender == null) {
-                              showErrorMessage("Gender is mandatory");
                             } else if (year == null) {
                               showErrorMessage("Year is mandatory");
                             } else if (isWilling == null) {
@@ -496,10 +410,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               await bloodService.updateUserData(
                                 nameTextEditingController.text,
                                 bloodgroup,
-                                gender,
                                 dept,
                                 year,
-                                sec,
                                 rollnoTextEditingController.text,
                                 phone1TextEditingController.text,
                                 phone2TextEditingController.text,

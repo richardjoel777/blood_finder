@@ -11,7 +11,7 @@ class DonateScreen extends StatefulWidget {
 }
 
 class _DonateScreenState extends State<DonateScreen> {
-  String bloodGroup;
+  String bloodGroup = "";
   bool isInit = true;
 
   @override
@@ -46,7 +46,7 @@ class _DonateScreenState extends State<DonateScreen> {
             )
           ],
           title: Text(
-            'Find ${bloodService.bloodGroup} Blood',
+            bloodService.bloodGroup != null ? 'Find ${bloodService.bloodGroup} Blood' : "",
             style: Theme.of(context).textTheme.headline6,
           ),
         ),

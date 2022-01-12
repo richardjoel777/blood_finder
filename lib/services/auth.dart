@@ -59,23 +59,23 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getAuthUsers() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("admins")
-          .doc("admins")
-          .get()
-          .then((doc) {
-        _authemails = doc.data()["authemails"];
-        _authmobs = doc.data()["authmobs"];
-        print(_authemails);
-        print(_authmobs);
-        notifyListeners();
-      });
-    } catch (ex) {
-      print(ex.message);
-    }
-  }
+  // Future<void> getAuthUsers() async {
+  //   try {
+  //     await FirebaseFirestore.instance
+  //         .collection("admins")
+  //         .doc("admins")
+  //         .get()
+  //         .then((doc) {
+  //       _authemails = doc.data()["authemails"];
+  //       _authmobs = doc.data()["authmobs"];
+  //       print(_authemails);
+  //       print(_authmobs);
+  //       notifyListeners();
+  //     });
+  //   } catch (ex) {
+  //     print(ex.message);
+  //   }
+  // }
 
   Future signInEmail(String email, String password) async {
     try {
