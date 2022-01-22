@@ -31,11 +31,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     TextEditingController email = TextEditingController();
-    TextEditingController phone = TextEditingController();
     TextEditingController password = TextEditingController();
     TextEditingController secretCode = TextEditingController();
     final _auth = Provider.of<AuthProvider>(context);
-    return Scaffold(
+    return isInit ? Center(child: CircularProgressIndicator(),) : Scaffold(
         drawer: MainDrawer(),
         appBar: AppBar(
           title: Text(
@@ -81,21 +80,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                             labelText: "Email",
-                            labelStyle: TextStyle(
-                              fontSize: 14.0,
-                            ),
-                            hintStyle:
-                                TextStyle(color: Colors.grey, fontSize: 10.0)),
-                        style: TextStyle(fontSize: 14.0),
-                      ),
-                      SizedBox(
-                        height: 1.0,
-                      ),
-                      TextField(
-                        controller: phone,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                            labelText: "Phone Number",
                             labelStyle: TextStyle(
                               fontSize: 14.0,
                             ),
@@ -158,7 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         onPressed: () async {
                           print(_auth.passcode);
-                          if (secretCode.text == _auth.passcode) {
+                          if (secretCode.text == _auth.passcode && email.text.contains("@kongu.edu")) {
                             dynamic result = await _auth.signupEmail(
                                 email.text, password.text);
                             if (result == null) {

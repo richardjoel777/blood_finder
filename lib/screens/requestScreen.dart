@@ -163,7 +163,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                                                 .seconds *
                                                             1000))
                                                 .inMinutes <
-                                            30) &&
+                                            90) &&
                                         (DateTime.now()
                                                 .difference(DateTime
                                                     .fromMillisecondsSinceEpoch(

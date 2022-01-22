@@ -134,7 +134,7 @@ class BloodService with ChangeNotifier {
                   double.parse(u['lat']),
                   double.parse(u['long'])) /
               1000);
-          if (distance <= 50) {
+          if (distance <= 60) {
             filteredData.add(u);
           }
         } else {
