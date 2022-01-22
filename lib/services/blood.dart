@@ -1,13 +1,13 @@
-import 'dart:convert';
+// import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
-import 'package:geolocator/geolocator.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:geolocator/geolocator.dart';
 
 class BloodService with ChangeNotifier {
   Map<String, Object> _filters = {
-    'area': '',
+    'area': 'All',
     'dept': 'All',
     'year': 'All',
     'hostel': false,
@@ -19,7 +19,7 @@ class BloodService with ChangeNotifier {
   String _bloodGroup;
   List _data = [];
   List _perData = [];
-  List _areaFilteredData = [];
+  // List _areaFilteredData = [];
   List _admins = [];
 
   Map<String, Object> get filters {
@@ -60,7 +60,7 @@ class BloodService with ChangeNotifier {
                 a['lastDonated'].seconds.compareTo(b['lastDonated'].seconds));
             _data = temp;
             _perData = temp;
-            _areaFilteredData = temp;
+            // _areaFilteredData = temp;
             _bloodGroup = bloodGroup;
             // print(_data);
             setFilters(_perData);
@@ -79,7 +79,7 @@ class BloodService with ChangeNotifier {
                 a['lastDonated'].seconds.compareTo(b['lastDonated'].seconds));
             _data = temp;
             _perData = temp;
-            _areaFilteredData = temp;
+            // _areaFilteredData = temp;
             _bloodGroup = bloodGroup;
             // print(_data);
             setFilters(_perData);
@@ -114,44 +114,44 @@ class BloodService with ChangeNotifier {
     }
   }
 
-  Future<void> getDonorData(String hospitalArea) async {
-    int i = 0;
-    // print(hospitalArea);
-    Geolocator geolocator = Geolocator();
-    List filteredData = [];
-    var hArea = '$hospitalArea India';
-    // print(_data.length);
-    final hUrl = Uri.parse(
-        'https://nominatim.openstreetmap.org/search/$hArea?format=json');
-    var hospitalRes = await http.get(hUrl);
-    if (hospitalRes.statusCode == 200) {
-      var hospitalResData = jsonDecode(hospitalRes.body);
-      _data.forEach((u) async {
-        if (u['lat'] != null) {
-          var distance = (await geolocator.distanceBetween(
-                  double.parse(hospitalResData[0]["lat"]),
-                  double.parse(hospitalResData[0]["lon"]),
-                  double.parse(u['lat']),
-                  double.parse(u['long'])) /
-              1000);
-          if (distance <= 60) {
-            filteredData.add(u);
-          }
-        } else {
-          filteredData.add(u);
-        }
-        i++;
-        if (i == _data.length) {
-          _data = filteredData;
-          _areaFilteredData = filteredData;
-          _isLoading = false;
-          notifyListeners();
-        }
-      });
-    } else {
-      Fluttertoast.showToast(msg: "Something went wrong");
-    }
-  }
+  // Future<void> getDonorData(String hospitalArea) async {
+  //   int i = 0;
+  //   // print(hospitalArea);
+  //   Geolocator geolocator = Geolocator();
+  //   List filteredData = [];
+  //   var hArea = '$hospitalArea India';
+  //   // print(_data.length);
+  //   final hUrl = Uri.parse(
+  //       'https://nominatim.openstreetmap.org/search/$hArea?format=json');
+  //   var hospitalRes = await http.get(hUrl);
+  //   if (hospitalRes.statusCode == 200) {
+  //     var hospitalResData = jsonDecode(hospitalRes.body);
+  //     _data.forEach((u) async {
+  //       if (u['lat'] != null) {
+  //         var distance = (await geolocator.distanceBetween(
+  //                 double.parse(hospitalResData[0]["lat"]),
+  //                 double.parse(hospitalResData[0]["lon"]),
+  //                 double.parse(u['lat']),
+  //                 double.parse(u['long'])) /
+  //             1000);
+  //         if (distance <= 60) {
+  //           filteredData.add(u);
+  //         }
+  //       } else {
+  //         filteredData.add(u);
+  //       }
+  //       i++;
+  //       if (i == _data.length) {
+  //         _data = filteredData;
+  //         _areaFilteredData = filteredData;
+  //         _isLoading = false;
+  //         notifyListeners();
+  //       }
+  //     });
+  //   } else {
+  //     Fluttertoast.showToast(msg: "Something went wrong");
+  //   }
+  // }
 
   void setFilters(List argData) {
     _data = argData.where((d) {
@@ -179,6 +179,9 @@ class BloodService with ChangeNotifier {
       if ((_filters['hostel']) && d['isDayScholar'] == true) {
         return false;
       }
+      if (_filters['area'] != 'All' && d['area'] != _filters['area']) {
+        return false;
+      }
       return true;
     }).toList();
     // print(_data);
@@ -201,6 +204,12 @@ class BloodService with ChangeNotifier {
     var fb = FirebaseFirestore.instance;
     var doc = await fb.collection("blooddata").doc("blooddata").get();
     return doc.data()['departments'];
+  }
+
+  Future<List> getDistricts() async {
+    var fb = FirebaseFirestore.instance;
+    var doc = await fb.collection("blooddata").doc("blooddata").get();
+    return doc.data()['districts'];
   }
 
   Future<Map> getUserData(String rollno) async {
@@ -356,22 +365,25 @@ class BloodService with ChangeNotifier {
   void changeFilter(Map newFilters) async {
     _isLoading = true;
     notifyListeners();
-    if (newFilters['area'] != _filters['area'] && newFilters['area'] != '') {
-      // print("YES");
-      _filters = newFilters;
-      await getDonorData(newFilters['area']).then((_) {
-        setFilters(_perData);
-      });
-    } else if (newFilters['area'] == _filters['area'] &&
-        newFilters['area'] != '') {
-      _filters = newFilters;
-      setFilters(_areaFilteredData);
-      _isLoading = false;
-    } else {
-      _filters = newFilters;
-      setFilters(_perData);
-      _isLoading = false;
-    }
+    // if (newFilters['area'] != _filters['area'] && newFilters['area'] != '') {
+    //   // print("YES");
+    //   _filters = newFilters;
+    //   await getDonorData(newFilters['area']).then((_) {
+    //     setFilters(_perData);
+    //   });
+    // } else if (newFilters['area'] == _filters['area'] &&
+    //     newFilters['area'] != '') {
+    //   _filters = newFilters;
+    //   setFilters(_areaFilteredData);
+    //   _isLoading = false;
+    // } else {
+    //   _filters = newFilters;
+    //   setFilters(_perData);
+    //   _isLoading = false;
+    // }
+    _filters = newFilters;
+    setFilters(_perData);
+    _isLoading = false;
     notifyListeners();
   }
 }
