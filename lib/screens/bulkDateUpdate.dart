@@ -61,12 +61,17 @@ class _BulkDateUpdateState extends State<BulkDateUpdate> {
                 children: [
                   IconButton(
                     onPressed: () async {
-                      _file = await FilePicker.platform.pickFiles();
+                      var file = await FilePicker.platform.pickFiles();
+                      setState(() {
+                        _file = file;
+                      });
                     },
                     icon: Icon(Icons.upload_file),
                     iconSize: 36,
                   ),
-                  Text("Upload CSV File"),
+                  _file == null
+                      ? Text("Select CSV File")
+                      : Text("File Selected"),
                   SizedBox(
                     height: 12,
                   ),
@@ -133,8 +138,8 @@ class _BulkDateUpdateState extends State<BulkDateUpdate> {
                         });
                         Fluttertoast.showToast(
                             msg: "Date Updated Successfully");
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                                  '/', (route) => false);
+                        Navigator.of(context)
+                            .pushNamedAndRemoveUntil('/', (route) => false);
                       } else {
                         if (_file == null) {
                           Fluttertoast.showToast(msg: "Please Pick a file");
