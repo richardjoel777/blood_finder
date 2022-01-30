@@ -3,7 +3,7 @@ import 'package:nss_blood_finder/screens/addAccountScreen.dart';
 import 'package:nss_blood_finder/screens/bulkDateUpdate.dart';
 import 'package:nss_blood_finder/screens/createReqScreen.dart';
 import 'package:nss_blood_finder/screens/registerScreen.dart';
-import 'package:nss_blood_finder/screens/requestScreen.dart';
+import 'package:nss_blood_finder/screens/homeScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,7 +15,7 @@ import 'package:nss_blood_finder/screens/loginScreen.dart';
 import 'package:nss_blood_finder/screens/profileScreen.dart';
 import 'package:nss_blood_finder/services/auth.dart';
 import 'package:nss_blood_finder/services/blood.dart';
-import 'package:nss_blood_finder/screens/donateScreen.dart';
+import 'package:nss_blood_finder/screens/donorDataScreen.dart';
 
 
 Future<void> main() async {

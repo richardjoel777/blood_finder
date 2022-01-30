@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:nss_blood_finder/screens/donateScreen.dart';
+import 'package:nss_blood_finder/screens/donorDataScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
 import 'package:nss_blood_finder/widgets/main_drawer.dart';
 import 'package:provider/provider.dart';

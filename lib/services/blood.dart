@@ -42,6 +42,18 @@ class BloodService with ChangeNotifier {
     return [..._admins];
   }
 
+  void resetFilters() {
+    _filters = {
+      'area': 'All',
+      'dept': 'All',
+      'year': 'All',
+      'hostel': false,
+      'willing': true,
+      'passedout': false,
+      'faculty': false,
+    };
+  }
+
   Future<void> getBloodData(String bloodGroup) async {
     _isLoading = true;
     // print('BLOOD $bloodGroup');
