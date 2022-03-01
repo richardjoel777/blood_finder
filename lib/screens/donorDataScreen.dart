@@ -39,7 +39,6 @@ class _DonateScreenState extends State<DonateScreen> {
           leading: new IconButton(
               icon: new Icon(Icons.arrow_back),
               onPressed: () {
-                print("hi");
                 bloodService.resetFilters();
                 Navigator.pop(context, true);
               }),

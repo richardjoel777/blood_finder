@@ -25,12 +25,11 @@ class _RequestsScreenState extends State<RequestsScreen> {
   Future<void> didChangeDependencies() async {
     if (isInit) {
       List groups = await bloodService.getBloodGroups();
-      List temprequests = await bloodService.getRequests();
-      if(Provider.of<BloodService>(context, listen: false).admins.isEmpty)
+      if (Provider.of<BloodService>(context, listen: false).admins.isEmpty) {
         await Provider.of<BloodService>(context, listen: false).getAdmins();
+      }
       setState(() {
         bloodGroups = groups;
-        requests = temprequests;
         isInit = false;
       });
     }
@@ -146,35 +145,36 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                 ),
                               ),
                               onPressed: () async {
-                                var found = false;
                                 if (bloodgroup == null || reqId.text.isEmpty) {
                                   showErrorMessage("All fields are mandatory");
                                 } else {
-                                  for (int i = 0; i < requests.length; i++) {
-                                    print(DateTime.fromMillisecondsSinceEpoch(
-                                            requests[i]['time'].seconds * 1000)
-                                        .difference(DateTime.now())
-                                        .inMinutes);
-                                    if (requests[i]['id'] == reqId.text &&
-                                        (DateTime.now()
-                                                .difference(DateTime
-                                                    .fromMillisecondsSinceEpoch(
-                                                        requests[i]['time']
-                                                                .seconds *
-                                                            1000))
-                                                .inMinutes <
-                                            90) &&
-                                        (DateTime.now()
-                                                .difference(DateTime
-                                                    .fromMillisecondsSinceEpoch(
-                                                        requests[i]['time']
-                                                                .seconds *
-                                                            1000))
-                                                .inMinutes >=
-                                            0)) {
-                                      found = true;
-                                    }
-                                  }
+                                  var found =
+                                      await bloodService.validateRequest(reqId.text);
+                                  // for (int i = 0; i < requests.length; i++) {
+                                  //   print(DateTime.fromMillisecondsSinceEpoch(
+                                  //           requests[i]['time'].seconds * 1000)
+                                  //       .difference(DateTime.now())
+                                  //       .inMinutes);
+                                  //   if (requests[i]['id'] == reqId.text &&
+                                  //       (DateTime.now()
+                                  //               .difference(DateTime
+                                  //                   .fromMillisecondsSinceEpoch(
+                                  //                       requests[i]['time']
+                                  //                               .seconds *
+                                  //                           1000))
+                                  //               .inMinutes <
+                                  //           90) &&
+                                  //       (DateTime.now()
+                                  //               .difference(DateTime
+                                  //                   .fromMillisecondsSinceEpoch(
+                                  //                       requests[i]['time']
+                                  //                               .seconds *
+                                  //                           1000))
+                                  //               .inMinutes >=
+                                  //           0)) {
+                                  //     found = true;
+                                  //   }
+                                  // }
                                   if (found == true) {
                                     Navigator.of(context).pushNamed(
                                         DonateScreen.routeName,

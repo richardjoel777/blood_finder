@@ -4,6 +4,8 @@ import 'package:nss_blood_finder/screens/bulkDateUpdate.dart';
 import 'package:nss_blood_finder/screens/createReqScreen.dart';
 import 'package:nss_blood_finder/screens/registerScreen.dart';
 import 'package:nss_blood_finder/screens/homeScreen.dart';
+import 'package:nss_blood_finder/screens/updateRequest.dart';
+import 'package:nss_blood_finder/screens/updateRequestOpen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -72,6 +74,8 @@ class MyApp extends StatelessWidget {
         CreateReqScreen.routeName: (ctx) => CreateReqScreen(),
         AddAccountScreen.routeName: (ctx) => AddAccountScreen(),
         BulkDateUpdate.routeName: (ctx) => BulkDateUpdate(),
+        UpdateRequestOpen.routeName: (ctx) => UpdateRequestOpen(),
+        UpdateReqScreen.routeName: (ctx) => UpdateReqScreen(),
       },
       debugShowCheckedModeBanner: false,
     ));

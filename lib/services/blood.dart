@@ -1,7 +1,12 @@
 // import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:uuid/uuid.dart';
 // import 'package:http/http.dart' as http;
 // import 'package:geolocator/geolocator.dart';
 
@@ -206,11 +211,43 @@ class BloodService with ChangeNotifier {
     return doc.data()['groups'];
   }
 
-  Future<List> getRequests() async {
-    var fb = FirebaseFirestore.instance;
-    var doc = await fb.collection("blooddata").doc("blooddata").get();
-    return doc.data()['requests'];
+  bool reqDateValid(var request) {
+    return (DateTime.now()
+                .difference(
+                    DateTime.fromMillisecondsSinceEpoch(request.seconds * 1000))
+                .inMinutes <
+            90) &&
+        (DateTime.now()
+                .difference(
+                    DateTime.fromMillisecondsSinceEpoch(request.seconds * 1000))
+                .inMinutes >=
+            0);
   }
+
+  Future<bool> validateRequest(String id) async {
+    try {
+      log("Hi");
+      var fb = FirebaseFirestore.instance;
+      log(id);
+      var doc = await fb.collection("requests").doc(id).get();
+      if (doc.exists && reqDateValid(doc.get('createdAt'))) {
+        log("Yes");
+        return true;
+      } else {
+        print("No");
+        return false;
+      }
+    } catch (ex) {
+      print(ex.toString());
+    }
+    return false;
+  }
+
+  // Future<List> getRequests() async {
+  //   var fb = FirebaseFirestore.instance;
+  //   var doc = await fb.collection("blooddata").doc("blooddata").get();
+  //   return doc.data()['requests'];
+  // }
 
   Future<List> getDepartments() async {
     var fb = FirebaseFirestore.instance;
@@ -241,6 +278,19 @@ class BloodService with ChangeNotifier {
           res = value.data();
         });
       });
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+    return res;
+  }
+
+  Future<Map> getRequestData(String id) async {
+    Map res;
+    try {
+      //print("HI HELLO");
+      var fb = FirebaseFirestore.instance;
+      var doc = await fb.collection("requests").doc(id).get();
+      res = doc.data();
     } catch (ex) {
       Fluttertoast.showToast(msg: ex.message);
     }
@@ -287,21 +337,102 @@ class BloodService with ChangeNotifier {
     }
   }
 
-  Future<void> createRequest(String reqId) async {
+  Future<String> createRequest(
+      String patientName,
+      String bloodGroup,
+      String hospitalName,
+      String units,
+      String reason,
+      String inchargeName,
+      String inchargeRollno,
+      String patientPhone) async {
     try {
+      int size = int.parse(units);
+      List<Map<String, String>> donors = [];
+      for (int i = 0; i < size; i++) {
+        donors.add({'name': '', 'rollno': '', 'dept': '', 'formImg': ''});
+      }
       var fb = FirebaseFirestore.instance;
-      await fb.collection("blooddata").doc("blooddata").get().then((doc) async {
-        List requests = doc.data()['requests'];
-        requests.add({'id': reqId, 'time': DateTime.now()});
-        await fb
-            .collection("blooddata")
-            .doc("blooddata")
-            .update({'requests': requests}).then((value) =>
-                Fluttertoast.showToast(msg: "Request Added Successfully"));
-      });
+      var newDoc = fb.collection("requests").doc();
+      var data = {
+        'id': newDoc.id,
+        'createdAt': DateTime.now(),
+        'patientName': patientName,
+        'bloodGroup': bloodGroup,
+        'hospitalName': hospitalName,
+        'units': units,
+        'reason': reason,
+        'inchargeName': inchargeName,
+        'inchargeRollno': inchargeRollno,
+        'patientPhone': patientPhone,
+        'isArranged': false,
+        'accompanyName': '',
+        'accompanyNameRollno': '',
+        'donors': donors,
+      };
+      await newDoc.set(data);
+      Fluttertoast.showToast(msg: "Request Added Successfully");
+      return newDoc.id;
     } catch (ex) {
       Fluttertoast.showToast(msg: ex.message);
     }
+    return "";
+  }
+
+  Future<void> updateRequest(
+    String id,
+    String patientName,
+    String bloodGroup,
+    String hospitalName,
+    String units,
+    String reason,
+    String inchargeName,
+    String inchargeRollno,
+    String patientPhone,
+    bool isArranged,
+    List<Map<String, String>> donors,
+    String accompanyName,
+    String accompanyRollNo,
+  ) async {
+    try {
+      var createdAt = DateTime.now();
+      var fb = FirebaseFirestore.instance;
+      var doc = fb.collection("requests").doc(id);
+      var data = {
+        'id': id,
+        'createdAt': createdAt,
+        'patientName': patientName,
+        'bloodGroup': bloodGroup,
+        'hospitalName': hospitalName,
+        'units': units,
+        'reason': reason,
+        'inchargeName': inchargeName,
+        'inchargeRollno': inchargeRollno,
+        'patientPhone': patientPhone,
+        'isArranged': isArranged,
+        'accompanyName': accompanyName,
+        'accompanyRollno': accompanyRollNo,
+        'donors': donors,
+      };
+      await doc.set(data);
+      var docRef = fb.collection("userData").doc("La5YHpmSxD4NbzTwUyvH");
+      await docRef.update({'lastDonated': createdAt, 'donations': FieldValue.arrayUnion([id])});
+      Fluttertoast.showToast(msg: "Request Updated Successfully");
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+  }
+
+  static Future<String> uploadFileToFirestore(String path) async {
+    log("uploading image");
+    var uuid = const Uuid();
+    String fileName = uuid.v4() + path.split('/').last;
+    Reference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child('uploads/$fileName');
+    UploadTask uploadTask = firebaseStorageRef.putFile(File(path));
+    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+    String url = await taskSnapshot.ref.getDownloadURL();
+    return url;
   }
 
   Future<void> updateUserData(name, bloodgroup, dept, year, rollno, phone1,
