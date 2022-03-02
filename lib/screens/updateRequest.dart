@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:nss_blood_finder/screens/formImgScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
 import 'package:nss_blood_finder/widgets/main_drawer.dart';
 import 'package:provider/provider.dart';
@@ -17,8 +19,9 @@ class _EditScreenState extends State<UpdateReqScreen> {
   bool isInit = true;
   bool isArranged = false;
   bool isLoading = false;
+  var requestData;
   String bloodgroup;
-  String id = "GBSgc7bPku8UMXSKuweH";
+  String id;
   List bloodGroups = [];
   ImagePicker imagePicker;
   TextEditingController patientNameTextEditingController =
@@ -51,9 +54,12 @@ class _EditScreenState extends State<UpdateReqScreen> {
   @override
   void didChangeDependencies() async {
     if (isInit) {
+      setState(() {
+        id = ModalRoute.of(context).settings.arguments as String;
+      });
       final bloodservice = Provider.of<BloodService>(context, listen: false);
       bloodGroups = await bloodservice.getBloodGroups();
-      final requestData = await bloodservice.getRequestData(id);
+      requestData = await bloodservice.getRequestData(id);
       departments = await bloodservice.getDepartments();
       log(requestData.toString());
       if (requestData != null) {
@@ -64,15 +70,15 @@ class _EditScreenState extends State<UpdateReqScreen> {
           inchargeRollnoTextEditingController.text =
               requestData['inchargeRollno'];
           isArranged = requestData['isArranged'];
-          accompanyNameTextEditingController.text = requestData['accompanyName'];
-          accompanyRollnoTextEditingController.text = requestData['accompanyRollno'];
+          accompanyNameTextEditingController.text =
+              requestData['accompanyName'];
+          accompanyRollnoTextEditingController.text =
+              requestData['accompanyRollno'];
           patientNameTextEditingController.text = requestData['patientName'];
           patientPhoneTextEditingController.text = requestData['patientPhone'];
           reasonTextEditingController.text = requestData['reason'];
           unitsTextEditingController.text = requestData['units'];
-          // log(int.parse(unitsTextEditingController.text).toString());
           for (int i = 0; i < int.parse(unitsTextEditingController.text); i++) {
-            // log(requestData['donors'][i]['name'].toString());
             donors.add({
               'name': new TextEditingController(
                   text: requestData['donors'][i]['name'].toString()),
@@ -437,22 +443,52 @@ class _EditScreenState extends State<UpdateReqScreen> {
                                               ],
                                             ),
                                             if (e['formImg'] != "")
-                                              Container(
-                                                height: 80,
-                                                width: 80,
-                                                margin: EdgeInsets.symmetric(
-                                                    horizontal: 8),
-                                                decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
-                                                        const BorderRadius.all(
-                                                            Radius.circular(6)),
-                                                    image: DecorationImage(
-                                                        image: NetworkImage(
-                                                            e['formImg']),
-                                                        fit: BoxFit.cover),
-                                                    border: Border.all(
-                                                        color: Colors.grey)),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  // log("works")
+                                                  final df = new DateFormat(
+                                                      'dd-MM-yyyy');
+                                                  String fileName = df.format(
+                                                          new DateTime
+                                                                  .fromMillisecondsSinceEpoch(
+                                                              requestData['createdAt']
+                                                                      .seconds *
+                                                                  1000)) +
+                                                      "-" +
+                                                      (e['name'].text as String).replaceAll(" ", "_");
+                                                  Navigator.of(context)
+                                                      .pushNamed(
+                                                          FormImageScreen
+                                                              .routeName,
+                                                          arguments: {
+                                                        'url': e['formImg'],
+                                                        'fileName': fileName
+                                                      });
+                                                },
+                                                child: Hero(
+                                                  tag: "formImage",
+                                                  child: Container(
+                                                    height: 80,
+                                                    width: 80,
+                                                    margin:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 8),
+                                                    decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                    .all(
+                                                                Radius.circular(
+                                                                    6)),
+                                                        image: DecorationImage(
+                                                            image: NetworkImage(
+                                                                e['formImg']),
+                                                            fit: BoxFit.cover),
+                                                        border: Border.all(
+                                                            color:
+                                                                Colors.grey)),
+                                                  ),
+                                                ),
                                               ),
                                             if (e['formImg'] == "")
                                               GestureDetector(
