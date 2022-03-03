@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -15,7 +14,9 @@ class CreateReqScreen extends StatefulWidget {
 class _EditScreenState extends State<CreateReqScreen> {
   bool isInit = true;
   String bloodgroup;
+  String area;
   List bloodGroups = [];
+  List districts = [];
   TextEditingController patientNameTextEditingController =
       new TextEditingController();
   TextEditingController hospitalNameTextEditingController =
@@ -36,6 +37,7 @@ class _EditScreenState extends State<CreateReqScreen> {
     if (isInit) {
       final bloodservice = Provider.of<BloodService>(context, listen: false);
       bloodGroups = await bloodservice.getBloodGroups();
+      districts = await bloodservice.getDistricts();
       setState(() {
         isInit = false;
       });
@@ -141,6 +143,34 @@ class _EditScreenState extends State<CreateReqScreen> {
                     SizedBox(
                       height: 10.0,
                     ),
+                    Row(
+                      children: [
+                        Text(
+                          "Area : ",
+                          style: Theme.of(context).textTheme.headline1.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        DropdownButton<String>(
+                          value: area != null ? area : null,
+                          items: districts.map((dynamic v) {
+                            return new DropdownMenuItem<String>(
+                              value: v,
+                              child: Text(v),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              area = newValue;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                     TextField(
                       controller: unitsTextEditingController,
                       keyboardType: TextInputType.number,
@@ -244,6 +274,7 @@ class _EditScreenState extends State<CreateReqScreen> {
                                 patientNameTextEditingController.text,
                                 bloodgroup,
                                 hospitalNameTextEditingController.text,
+                                area,
                                 unitsTextEditingController.text,
                                 reasonTextEditingController.text,
                                 inchargeNameTextEditingController.text,

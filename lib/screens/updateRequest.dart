@@ -21,8 +21,10 @@ class _EditScreenState extends State<UpdateReqScreen> {
   bool isLoading = false;
   var requestData;
   String bloodgroup;
+  String area;
   String id;
   List bloodGroups = [];
+  List districts = [];
   ImagePicker imagePicker;
   TextEditingController patientNameTextEditingController =
       new TextEditingController();
@@ -61,6 +63,7 @@ class _EditScreenState extends State<UpdateReqScreen> {
       bloodGroups = await bloodservice.getBloodGroups();
       requestData = await bloodservice.getRequestData(id);
       departments = await bloodservice.getDepartments();
+      districts = await bloodservice.getDistricts();
       log(requestData.toString());
       if (requestData != null) {
         setState(() {
@@ -78,6 +81,7 @@ class _EditScreenState extends State<UpdateReqScreen> {
           patientPhoneTextEditingController.text = requestData['patientPhone'];
           reasonTextEditingController.text = requestData['reason'];
           unitsTextEditingController.text = requestData['units'];
+          area = requestData['area'];
           for (int i = 0; i < int.parse(unitsTextEditingController.text); i++) {
             donors.add({
               'name': new TextEditingController(
@@ -120,7 +124,6 @@ class _EditScreenState extends State<UpdateReqScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: MainDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
@@ -212,6 +215,35 @@ class _EditScreenState extends State<UpdateReqScreen> {
                     SizedBox(
                       height: 10.0,
                     ),
+                    Row(
+                      children: [
+                        Text(
+                          "Area : ",
+                          style: Theme.of(context).textTheme.headline1.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        DropdownButton<String>(
+                          value: area != null ? area : null,
+                          items: districts.map((dynamic v) {
+                            return new DropdownMenuItem<String>(
+                              value: v,
+                              child: Text(v),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              area = newValue;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 1.0,),
                     TextField(
                       controller: unitsTextEditingController,
                       keyboardType: TextInputType.number,
@@ -455,7 +487,8 @@ class _EditScreenState extends State<UpdateReqScreen> {
                                                                       .seconds *
                                                                   1000)) +
                                                       "-" +
-                                                      (e['name'].text as String).replaceAll(" ", "_");
+                                                      (e['name'].text as String)
+                                                          .replaceAll(" ", "_");
                                                   Navigator.of(context)
                                                       .pushNamed(
                                                           FormImageScreen
@@ -560,6 +593,7 @@ class _EditScreenState extends State<UpdateReqScreen> {
                           patientNameTextEditingController.text,
                           bloodgroup,
                           hospitalNameTextEditingController.text,
+                          area,
                           unitsTextEditingController.text,
                           reasonTextEditingController.text,
                           inchargeNameTextEditingController.text,

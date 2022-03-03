@@ -20,15 +20,30 @@ class BloodService with ChangeNotifier {
     'passedout': false,
     'faculty': false,
   };
+
+  Map<String, Object> _donationFilters = {
+    'area': 'All',
+    'dept': 'All',
+    'donor': '',
+    'bloodGroup': 'All',
+    'isArranged': false,
+  };
   bool _isLoading = false;
   String _bloodGroup;
   List _data = [];
   List _perData = [];
+  List _perDonations = [];
   // List _areaFilteredData = [];
   List _admins = [];
 
+  List _donations = [];
+
   Map<String, Object> get filters {
     return {..._filters};
+  }
+
+  Map<String, Object> get donationFilters {
+    return {..._donationFilters};
   }
 
   bool get isLoading {
@@ -41,6 +56,10 @@ class BloodService with ChangeNotifier {
 
   List get bloodData {
     return [..._data];
+  }
+
+  List get donations {
+    return [..._donations];
   }
 
   List get admins {
@@ -341,6 +360,7 @@ class BloodService with ChangeNotifier {
       String patientName,
       String bloodGroup,
       String hospitalName,
+      String area,
       String units,
       String reason,
       String inchargeName,
@@ -360,6 +380,7 @@ class BloodService with ChangeNotifier {
         'patientName': patientName,
         'bloodGroup': bloodGroup,
         'hospitalName': hospitalName,
+        'area': area,
         'units': units,
         'reason': reason,
         'inchargeName': inchargeName,
@@ -384,6 +405,7 @@ class BloodService with ChangeNotifier {
     String patientName,
     String bloodGroup,
     String hospitalName,
+    String area,
     String units,
     String reason,
     String inchargeName,
@@ -404,6 +426,7 @@ class BloodService with ChangeNotifier {
         'patientName': patientName,
         'bloodGroup': bloodGroup,
         'hospitalName': hospitalName,
+        'area': area,
         'units': units,
         'reason': reason,
         'inchargeName': inchargeName,
@@ -415,12 +438,108 @@ class BloodService with ChangeNotifier {
         'donors': donors,
       };
       await doc.set(data);
-      var docRef = fb.collection("userData").doc("La5YHpmSxD4NbzTwUyvH");
-      await docRef.update({'lastDonated': createdAt, 'donations': FieldValue.arrayUnion([id])});
-      Fluttertoast.showToast(msg: "Request Updated Successfully");
+      // var docRef = fb.collection("userData").doc("La5YHpmSxD4NbzTwUyvH");
+      // await docRef.update({
+      //   'lastDonated': createdAt,
+      //   'donations': FieldValue.arrayUnion([id])
+      // });
+
+      WriteBatch _batch = fb.batch();
+
+      for (var donor in donors) {
+        if (donor['rollno'] != '') {
+          var userId = await getIdofUser(donor['rollno']);
+          _batch.update(fb.doc("/userData/$userId"), {
+            "lastDonated": createdAt,
+            "donations": FieldValue.arrayUnion([userId]),
+          });
+        }
+      }
+
+      await _batch.commit();
+      if (donations.isNotEmpty) {
+        await getDonations();
+      }
+      // Fluttertoast.showToast(msg: "Request Updated Successfully");
     } catch (ex) {
       Fluttertoast.showToast(msg: ex.message);
     }
+  }
+
+  Future<void> getDonations() async {
+    var fb = FirebaseFirestore.instance;
+    var snapshots = await fb.collection("requests").get();
+    List temp = [];
+    snapshots.docs.forEach((doc) {
+      temp.add(doc.data());
+      if (temp.length == snapshots.docs.length) {
+        temp.sort((a, b) =>
+            -a['createdAt'].seconds.compareTo(b['createdAt'].seconds));
+        _perDonations = temp;
+        _donations = temp;
+        setDonationFilters(_perDonations);
+        notifyListeners();
+      }
+    });
+  }
+
+  // Map<String, Object> _donationFilters = {
+  //   'area': 'All',
+  //   'dept': 'All',
+  //   'donor': '',
+  //   'bloodGroup': '',
+  //   'isArranged': true,
+  // };
+
+  void setDonationFilters(List argData) {
+    log("Works");
+    // log(_donations.toString());
+    log(_donationFilters.toString());
+    _donations = argData.where((d) {
+      if (_donationFilters['area'] != 'All' &&
+          d['area'] != _donationFilters['area']) {
+        return false;
+      }
+      if (_donationFilters['isArranged'] == true && d['isArranged'] != true) {
+        return false;
+      }
+      if (_donationFilters['bloodGroup'] != 'All' &&
+          d['bloodGroup'] != _donationFilters['bloodGroup']) {
+        return false;
+      }
+      bool isDeptIncl = false;
+      bool isDonorIncl = false;
+      for (var donor in d['donors']) {
+        if (_donationFilters['dept'] != 'All' &&
+            donor['dept'] == _donationFilters['dept']) {
+          isDeptIncl = true;
+        }
+        if (_donationFilters['donor'] != '' &&
+            donor['rollno'] == _donationFilters['donor']) {
+          isDonorIncl = true;
+        }
+      }
+      if (_donationFilters['dept'] != 'All' && !isDeptIncl) {
+        return false;
+      }
+      if (_donationFilters['donor'] != '' && !isDonorIncl) {
+        return false;
+      }
+      return true;
+    }).toList();
+    log(_donations.toString());
+    // print(_data);
+    notifyListeners();
+  }
+
+  void resetDonorFilters() {
+    _donationFilters = {
+      'area': 'All',
+      'dept': 'All',
+      'donor': '',
+      'bloodGroup': 'All',
+      'isArranged': false,
+    };
   }
 
   static Future<String> uploadFileToFirestore(String path) async {
@@ -503,6 +622,16 @@ class BloodService with ChangeNotifier {
     } catch (ex) {
       print(ex);
     }
+  }
+
+  void changeDonationFilter(Map newFilters) {
+    _isLoading = true;
+    notifyListeners();
+    _donationFilters = newFilters;
+    log("New Filters" + newFilters.toString());
+    setDonationFilters(_perDonations);
+    _isLoading = false;
+    notifyListeners();
   }
 
   void changeFilter(Map newFilters) async {

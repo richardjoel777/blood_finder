@@ -3,6 +3,7 @@ import 'package:nss_blood_finder/screens/addAccountScreen.dart';
 import 'package:nss_blood_finder/screens/addData.dart';
 import 'package:nss_blood_finder/screens/bulkDateUpdate.dart';
 import 'package:nss_blood_finder/screens/createReqScreen.dart';
+import 'package:nss_blood_finder/screens/donationsScreen.dart';
 import 'package:nss_blood_finder/screens/edit_profile.dart';
 import 'package:nss_blood_finder/screens/edit_screen.dart';
 import 'package:nss_blood_finder/screens/loginScreen.dart';
@@ -118,9 +119,13 @@ class _MainDrawerState extends State<MainDrawer> {
             Navigator.of(context).pushNamed(
                 CreateReqScreen.routeName,);
           }),
-          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Update Request", Icons.create, () {
+          if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Update Request", Icons.edit, () {
             Navigator.of(context).pushNamed(
                 UpdateRequestOpen.routeName,);
+          }),
+           if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Donations History", Icons.history, () {
+            Navigator.of(context).pushNamed(
+                DonationsScreen.routeName,);
           }),
           if(auth.currentUser != null) buildListTile("Logout", Icons.logout, () async {
             await Provider.of<AuthProvider>(context, listen: false).signOut().then((_) =>
