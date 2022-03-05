@@ -3,7 +3,6 @@ import 'package:nss_blood_finder/screens/donationFilterScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
 import 'package:nss_blood_finder/widgets/donationItem.dart';
 import 'package:provider/provider.dart';
-import '../widgets/donation_request_item.dart';
 
 class DonationsScreen extends StatefulWidget {
   static const routeName = '/donations-history';

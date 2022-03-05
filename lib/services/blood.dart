@@ -28,6 +28,23 @@ class BloodService with ChangeNotifier {
     'bloodGroup': 'All',
     'isArranged': false,
   };
+
+  Map<String, int> _deptCount = {
+    'CSE': 0,
+    'IT': 0,
+    'FT': 0,
+    'EEE': 0,
+    'ECE': 0,
+    'B.SC': 0,
+    'AUTO': 0,
+    'CIVIL': 0,
+    'E&I': 0,
+    'MCA': 0,
+    'MECH': 0,
+    'MTS': 0,
+    'CHE': 0,
+  };
+
   bool _isLoading = false;
   String _bloodGroup;
   List _data = [];
@@ -40,6 +57,10 @@ class BloodService with ChangeNotifier {
 
   Map<String, Object> get filters {
     return {..._filters};
+  }
+
+  Map<String, Object> get deptCount {
+    return {..._deptCount};
   }
 
   Map<String, Object> get donationFilters {
@@ -76,6 +97,58 @@ class BloodService with ChangeNotifier {
       'passedout': false,
       'faculty': false,
     };
+  }
+
+  Future<void> setDeptCount() async {
+    log("Inside setDonations");
+    try {
+      var fb = FirebaseFirestore.instance;
+      var snapshots = await fb.collection("requests").get();
+      List temp = [];
+      snapshots.docs.forEach((doc) {
+        temp.add(doc.data());
+        if (temp.length == snapshots.docs.length) {
+          temp.sort((a, b) =>
+              -a['createdAt'].seconds.compareTo(b['createdAt'].seconds));
+          _perDonations = temp;
+          _donations = temp;
+        }
+      });
+      var year = DateTime.now().year;
+      for (var donation in donations) {
+        var donationYear =
+            DateTime.fromMillisecondsSinceEpoch(donation['createdAt'].seconds * 1000)
+                .year;
+        if (donation['isArranged'] && year == donationYear) {
+          for (var donor in donation['donors']) {
+            if (donor['rollno'] != '') {
+              _deptCount[donor['dept']]++;
+            }
+          }
+        }
+      }
+    } catch (ex) {
+      log(ex.toString());
+    }
+    notifyListeners();
+  }
+
+  void resetDeptCount() {
+    _deptCount = {
+    'IT': 0,
+    'FT': 0,
+    'EEE': 0,
+    'ECE': 0,
+    'CSE': 0,
+    'B.SC': 0,
+    'AUTO': 0,
+    'CIVIL': 0,
+    'E&I': 0,
+    'MCA': 0,
+    'MECH': 0,
+    'MTS': 0,
+    'CHE': 0,
+  };
   }
 
   Future<void> getBloodData(String bloodGroup) async {

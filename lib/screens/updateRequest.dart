@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:nss_blood_finder/screens/formImgScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
-import 'package:nss_blood_finder/widgets/main_drawer.dart';
 import 'package:provider/provider.dart';
 
 class UpdateReqScreen extends StatefulWidget {

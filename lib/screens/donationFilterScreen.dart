@@ -173,7 +173,10 @@ class _DonationFilerScreenState extends State<DonationFilerScreen> {
                           currentFilters['isArranged'] = newvalue;
                         });
                       }),
-                      _buildSelectTile("Filter by BloodGroup", currentFilters['bloodGroup'], bloodGroups, (newValue){
+                      _buildSelectTile(
+                          "Filter by BloodGroup",
+                          currentFilters['bloodGroup'],
+                          bloodGroups, (newValue) {
                         setState(() {
                           currentFilters['bloodGroup'] = newValue;
                         });

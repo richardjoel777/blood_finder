@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nss_blood_finder/screens/addAccountScreen.dart';
 import 'package:nss_blood_finder/screens/bulkDateUpdate.dart';
 import 'package:nss_blood_finder/screens/createReqScreen.dart';
+import 'package:nss_blood_finder/screens/deptCountScreen.dart';
 import 'package:nss_blood_finder/screens/donationFilterScreen.dart';
 import 'package:nss_blood_finder/screens/donationsScreen.dart';
 import 'package:nss_blood_finder/screens/formImgScreen.dart';
@@ -82,6 +83,7 @@ class MyApp extends StatelessWidget {
         FormImageScreen.routeName: (ctx) => FormImageScreen(),
         DonationsScreen.routeName: (ctx) => DonationsScreen(),
         DonationFilerScreen.routeName: (ctx) => DonationFilerScreen(),
+        DeptCountScreen.routeName: (ctx) => DeptCountScreen(),
       },
       debugShowCheckedModeBanner: false,
     ));
