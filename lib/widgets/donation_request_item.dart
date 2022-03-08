@@ -72,7 +72,7 @@ class DonationRequestItem extends StatelessWidget {
                       if (userData['year'] != "FACULTY" &&
                           userData['year'] != "PASSED OUT")
                         Text(
-                            '${getRom(userData['year'].toString())}-${userData['dept']}',
+                            '${getRom(userData['year'].toString())}-${userData['dept']}-${userData['sec']}',
                             style: Theme.of(context).textTheme.headline1),
                       if (userData['year'] == "FACULTY" ||
                           userData['year'] == "PASSED OUT")

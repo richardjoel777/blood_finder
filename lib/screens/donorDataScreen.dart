@@ -75,6 +75,7 @@ class _DonateScreenState extends State<DonateScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            SizedBox(height: 20,),
                             Container(
                                 height: 200,
                                 child: Image.asset(

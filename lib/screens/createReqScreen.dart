@@ -13,6 +13,7 @@ class CreateReqScreen extends StatefulWidget {
 
 class _EditScreenState extends State<CreateReqScreen> {
   bool isInit = true;
+  bool isLoading = false;
   String bloodgroup;
   String area;
   List bloodGroups = [];
@@ -35,11 +36,15 @@ class _EditScreenState extends State<CreateReqScreen> {
   @override
   void didChangeDependencies() async {
     if (isInit) {
+      setState(() {
+        isLoading = true;
+      });
       final bloodservice = Provider.of<BloodService>(context, listen: false);
       bloodGroups = await bloodservice.getBloodGroups();
       districts = await bloodservice.getDistricts();
       setState(() {
         isInit = false;
+        isLoading = false;
       });
     }
     super.didChangeDependencies();
@@ -60,7 +65,7 @@ class _EditScreenState extends State<CreateReqScreen> {
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      body: isInit
+      body: isLoading
           ? Center(
               child: CircularProgressIndicator(),
             )
@@ -269,24 +274,69 @@ class _EditScreenState extends State<CreateReqScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await Provider.of<BloodService>(context, listen: false)
-                            .createRequest(
-                                patientNameTextEditingController.text,
-                                bloodgroup,
-                                hospitalNameTextEditingController.text,
-                                area,
-                                unitsTextEditingController.text,
-                                reasonTextEditingController.text,
-                                inchargeNameTextEditingController.text,
-                                inchargeRollnoTextEditingController.text,
-                                patientPhoneTextEditingController.text)
-                            .then((id) {
-                          Clipboard.setData(ClipboardData(text: id));
+                        if (patientNameTextEditingController.text.isEmpty) {
                           Fluttertoast.showToast(
-                              msg: "Request Id copied to Clipboard");
-                          Navigator.of(context)
-                              .pushNamedAndRemoveUntil('/', (route) => false);
-                        });
+                              msg: "Patient Name is Mandatory");
+                        } else if (bloodgroup == null) {
+                          Fluttertoast.showToast(
+                              msg: "Patient BloodGroup is Mandatory");
+                        } else if (hospitalNameTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Hospital Name is Mandatory");
+                        } else if (area == null) {
+                          Fluttertoast.showToast(
+                              msg: "Hospital Area is Mandatory");
+                        } else if (unitsTextEditingController.text.isEmpty) {
+                          Fluttertoast.showToast(msg: "Units is Mandatory");
+                        } else if (reasonTextEditingController.text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Hospitalization Reason is Mandatory");
+                        } else if (inchargeNameTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Volunteer Incharge Name is Mandatory");
+                        } else if (inchargeRollnoTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Volunteer Incharge Roll no. is Mandatory");
+                        } else if (patientPhoneTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Patient Phone Number is Mandatory");
+                        }
+                        else if (patientPhoneTextEditingController
+                            .text.length != 10) {
+                          Fluttertoast.showToast(
+                              msg: "Enter Valid Phone Number");
+                        }
+                         else {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          var id = await Provider.of<BloodService>(context,
+                                  listen: false)
+                              .createRequest(
+                                  patientNameTextEditingController.text,
+                                  bloodgroup,
+                                  hospitalNameTextEditingController.text,
+                                  area,
+                                  unitsTextEditingController.text,
+                                  reasonTextEditingController.text,
+                                  inchargeNameTextEditingController.text,
+                                  inchargeRollnoTextEditingController.text,
+                                  patientPhoneTextEditingController.text);
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (id != "") {
+                            Clipboard.setData(ClipboardData(text: id));
+                            Fluttertoast.showToast(
+                                msg: "Request Id copied to Clipboard");
+                            Navigator.of(context)
+                                .pushNamedAndRemoveUntil('/', (route) => false);
+                          }
+                        }
                       },
                     ),
                     SizedBox(height: 20.0),

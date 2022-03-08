@@ -79,7 +79,7 @@ class _EditScreenState extends State<EditProfileScreen> {
                   showErrorMessage("Roll no. is mandatory");
                 } else {
                     Navigator.pushNamed(
-                        context, ProfileScreen.routeName, arguments: rollno.text);
+                        context, ProfileScreen.routeName, arguments: rollno.text.toUpperCase());
                 }
               },
             ),

@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../models/user.dart';
@@ -7,8 +6,6 @@ import '../models/user.dart';
 class AuthProvider with ChangeNotifier {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   String _passcode = "";
-  List _authemails = [];
-  List _authmobs = [];
 
   UserData _userFromFirebaseuser(User user) {
     return user != null ? UserData(user.uid) : null;
@@ -22,14 +19,6 @@ class AuthProvider with ChangeNotifier {
     return _passcode;
   }
 
-  List get authemails {
-    return [..._authemails];
-  }
-
-  List get authmobs {
-    return [..._authmobs];
-  }
-
   Future signupEmail(String email, String password) async {
     try {
       UserCredential result = await firebaseAuth.createUserWithEmailAndPassword(
@@ -40,22 +29,6 @@ class AuthProvider with ChangeNotifier {
     } catch (ex) {
       print(ex.message);
       Fluttertoast.showToast(msg: ex.message);
-    }
-  }
-
-  Future<void> getPassCode() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("admins")
-          .doc("admins")
-          .get()
-          .then((doc) {
-        _passcode = doc.data()["passcode"];
-        print(_passcode);
-        notifyListeners();
-      });
-    } catch (ex) {
-      print(ex.message);
     }
   }
 
@@ -77,7 +50,7 @@ class AuthProvider with ChangeNotifier {
   //   }
   // }
 
-  Future signInEmail(String email, String password) async {
+  Future<UserData> signInEmail(String email, String password) async {
     try {
       UserCredential result = await firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -88,9 +61,25 @@ class AuthProvider with ChangeNotifier {
       print(ex.message);
       Fluttertoast.showToast(msg: ex.message);
     }
+    return null;
   }
 
   Future<void> signOut() async {
-    await firebaseAuth.signOut();
+    try {
+      await firebaseAuth.signOut();
+    } catch (ex) {
+      Fluttertoast.showToast(msg: ex.message);
+    }
+  }
+
+  Future<bool> resetPassword(String email) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (ex) {
+      print(ex.message);
+      Fluttertoast.showToast(msg: ex.message);
+      return false;
+    }
   }
 }

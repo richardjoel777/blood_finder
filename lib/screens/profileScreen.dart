@@ -11,6 +11,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool isInit = true;
+  bool isLoading = false;
   TextEditingController nameTextEditingController = new TextEditingController();
   TextEditingController rollnoTextEditingController =
       new TextEditingController();
@@ -18,21 +19,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       new TextEditingController();
   TextEditingController phone2TextEditingController =
       new TextEditingController();
-  // TextEditingController addressTextEditingController =
-  //     new TextEditingController();
   String bloodgroup;
   String area;
   String dept;
   String year;
+  String sec;
   bool isDayScholar = false;
   bool isWilling = false;
   List bloodGroups = [];
   List districts = [];
   List years = ["1", "2", "3", "4", "FACULTY", "PASSED OUT"];
+  List sections = ["A", "B", "C", "D", "E", "F"];
   List departments = [];
   @override
   void didChangeDependencies() async {
     if (isInit) {
+      setState(() {
+        isLoading = true;
+      });
       var rollNo = ModalRoute.of(context).settings.arguments as String;
       final bloodservice = Provider.of<BloodService>(context, listen: false);
       departments = await bloodservice.getDepartments();
@@ -50,8 +54,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         year = userData['year'];
         isWilling = userData['isWilling'];
         isDayScholar = userData['isDayScholar'];
+        sec = userData['sec'];
         setState(() {
           isInit = false;
+          isLoading = false;
         });
       } else {
         Navigator.of(context).pop();
@@ -75,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
-        body: isInit
+        body: isLoading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Padding(
@@ -220,6 +226,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   onChanged: (newValue) {
                                     setState(() {
                                       year = newValue;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 1.0,
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Section : ",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline1
+                                      .copyWith(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.black),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                DropdownButton<String>(
+                                  value: sec != null ? sec : null,
+                                  items: sections.map((dynamic v) {
+                                    return new DropdownMenuItem<String>(
+                                      value: v,
+                                      child: Text(v),
+                                    );
+                                  }).toList(),
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                      sec = newValue;
                                     });
                                   },
                                 ),
@@ -387,7 +427,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           .text.length <
                                       10) {
                                     showErrorMessage("Enter valid mobile no.");
-                                  } else if (area  == null) {
+                                  } else if (area == null) {
                                     showErrorMessage("Address is mandatory");
                                   } else if (bloodgroup == null) {
                                     showErrorMessage(
@@ -402,6 +442,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     showErrorMessage(
                                         "Is DayScholar is mandatory");
                                   } else {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
                                     await bloodService.updateUserData(
                                       nameTextEditingController.text,
                                       bloodgroup,
@@ -414,6 +457,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       isWilling,
                                       isDayScholar,
                                     );
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                     Navigator.of(context)
                                         .pushNamedAndRemoveUntil(
                                             '/', (route) => false);
@@ -443,6 +489,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     showErrorMessage(
                                         "Is DayScholar is mandatory");
                                   } else {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
                                     await bloodService.updateUserData(
                                       nameTextEditingController.text,
                                       bloodgroup,
@@ -455,6 +504,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       isWilling,
                                       isDayScholar,
                                     );
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                     Navigator.of(context)
                                         .pushNamedAndRemoveUntil(
                                             '/', (route) => false);

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:nss_blood_finder/screens/formImgScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
+import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 
 class UpdateReqScreen extends StatefulWidget {
@@ -57,6 +58,7 @@ class _EditScreenState extends State<UpdateReqScreen> {
     if (isInit) {
       setState(() {
         id = ModalRoute.of(context).settings.arguments as String;
+        isLoading = true;
       });
       final bloodservice = Provider.of<BloodService>(context, listen: false);
       bloodGroups = await bloodservice.getBloodGroups();
@@ -88,13 +90,15 @@ class _EditScreenState extends State<UpdateReqScreen> {
               'rollno': new TextEditingController(
                   text: requestData['donors'][i]['rollno'].toString()),
               'formImg': requestData['donors'][i]['formImg'],
-              'dept': requestData['donors'][i]['dept']
+              'dept': requestData['donors'][i]['dept'],
+              'fileType': requestData['donors'][i]['fileType']
             });
           }
         });
       }
       setState(() {
         isInit = false;
+        isLoading = false;
       });
     }
     super.didChangeDependencies();
@@ -102,6 +106,26 @@ class _EditScreenState extends State<UpdateReqScreen> {
 
   showErrorMessage(String msg) {
     Fluttertoast.showToast(msg: msg);
+  }
+
+  bool validateDonors() {
+    bool res = false;
+    for (var donor in donors) {
+      // log("hello");
+      // log(donor['rollno'].text.toString());
+      // log(donor['name'].text.toString());
+      // log(donor['formImg']);
+      // log(donor['dept']);
+      log(donor.toString());
+      if (donor['rollno'] != "" &&
+          donor['name'] != "" &&
+          donor['formImg'] != "" &&
+          donor['dept'] != "") {
+        res = true;
+      }
+    }
+    // log(res.toString());
+    return res;
   }
 
   void _handleImagePicker(int index) async {
@@ -113,9 +137,23 @@ class _EditScreenState extends State<UpdateReqScreen> {
         source: ImageSource.gallery,
         imageQuality: 100,
         preferredCameraDevice: CameraDevice.front);
+
+    if (image == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+    String extension = path.extension(image.path);
+    log(extension);
     var url = await BloodService.uploadFileToFirestore(image.path);
+    if (url != "") {
+      setState(() {
+        donors[index]['formImg'] = url;
+        donors[index]['fileType'] = extension;
+      });
+    }
     setState(() {
-      donors[index]['formImg'] = url;
       isLoading = false;
     });
   }
@@ -130,7 +168,7 @@ class _EditScreenState extends State<UpdateReqScreen> {
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      body: isInit || isLoading
+      body: isLoading
           ? Center(
               child: CircularProgressIndicator(),
             )
@@ -242,7 +280,9 @@ class _EditScreenState extends State<UpdateReqScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 1.0,),
+                    SizedBox(
+                      height: 1.0,
+                    ),
                     TextField(
                       controller: unitsTextEditingController,
                       keyboardType: TextInputType.number,
@@ -494,7 +534,8 @@ class _EditScreenState extends State<UpdateReqScreen> {
                                                               .routeName,
                                                           arguments: {
                                                         'url': e['formImg'],
-                                                        'fileName': fileName
+                                                        'fileName': fileName,
+                                                        'type': e['fileType'],
                                                       });
                                                 },
                                                 child: Hero(
@@ -574,43 +615,93 @@ class _EditScreenState extends State<UpdateReqScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        setState(() {
-                          isLoading = true;
-                        });
-                        List<Map<String, String>> donorsData = [];
-                        for (var i in donors) {
-                          donorsData.add({
-                            'name': i['name'].text,
-                            'rollno': i['rollno'].text,
-                            'formImg': i['formImg'],
-                            'dept': i['dept'],
-                          });
-                        }
-                        await Provider.of<BloodService>(context, listen: false)
-                            .updateRequest(
-                          id,
-                          patientNameTextEditingController.text,
-                          bloodgroup,
-                          hospitalNameTextEditingController.text,
-                          area,
-                          unitsTextEditingController.text,
-                          reasonTextEditingController.text,
-                          inchargeNameTextEditingController.text,
-                          inchargeRollnoTextEditingController.text,
-                          patientPhoneTextEditingController.text,
-                          isArranged,
-                          donorsData,
-                          accompanyNameTextEditingController.text,
-                          accompanyRollnoTextEditingController.text,
-                        )
-                            .then((_) {
+                        if (patientNameTextEditingController.text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Patient Name is Mandatory");
+                        } else if (bloodgroup == null) {
+                          Fluttertoast.showToast(
+                              msg: "Patient BloodGroup is Mandatory");
+                        } else if (hospitalNameTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Hospital Name is Mandatory");
+                        } else if (area == null) {
+                          Fluttertoast.showToast(
+                              msg: "Hospital Area is Mandatory");
+                        } else if (unitsTextEditingController.text.isEmpty) {
+                          Fluttertoast.showToast(msg: "Units is Mandatory");
+                        } else if (reasonTextEditingController.text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Hospitalization Reason is Mandatory");
+                        } else if (inchargeNameTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Volunteer Incharge Name is Mandatory");
+                        } else if (inchargeRollnoTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Volunteer Incharge Roll no. is Mandatory");
+                        } else if (patientPhoneTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Patient Phone Number is Mandatory");
+                        } else if (patientPhoneTextEditingController
+                                .text.length !=
+                            10) {
+                          Fluttertoast.showToast(
+                              msg: "Enter Valid Phone Number");
+                        } else if (accompanyNameTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg: "Accompanying Volunteer Name is Mandatory");
+                        } else if (accompanyRollnoTextEditingController
+                            .text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Accompanying Volunteer Roll no. is Mandatory");
+                        } else if (isArranged == true && !validateDonors()) {
+                          Fluttertoast.showToast(
+                              msg: "Atleast one Donor Detail is Mandatory");
+                        } else {
                           setState(() {
-                            isLoading = false;
+                            isLoading = true;
                           });
-                          Fluttertoast.showToast(msg: "Updated Successfully");
-                          Navigator.of(context)
-                              .pushNamedAndRemoveUntil('/', (route) => false);
-                        });
+                          List<Map<String, String>> donorsData = [];
+                          for (var i in donors) {
+                            donorsData.add({
+                              'name': i['name'].text,
+                              'rollno': i['rollno'].text,
+                              'formImg': i['formImg'],
+                              'dept': i['dept'],
+                            });
+                          }
+                          // var res = await Provider.of<BloodService>(context,
+                          //         listen: false)
+                          //     .updateRequest(
+                          //   id,
+                          //   patientNameTextEditingController.text,
+                          //   bloodgroup,
+                          //   hospitalNameTextEditingController.text,
+                          //   area,
+                          //   unitsTextEditingController.text,
+                          //   reasonTextEditingController.text,
+                          //   inchargeNameTextEditingController.text,
+                          //   inchargeRollnoTextEditingController.text,
+                          //   patientPhoneTextEditingController.text,
+                          //   isArranged,
+                          //   donorsData,
+                          //   accompanyNameTextEditingController.text,
+                          //   accompanyRollnoTextEditingController.text,
+                          // );
+                          // setState(() {
+                          //   isLoading = false;
+                          // });
+                          // if (res) {
+                          //   Fluttertoast.showToast(msg: "Updated Successfully");
+                          //   Navigator.of(context)
+                          //       .pushNamedAndRemoveUntil('/', (route) => false);
+                          // }
+                        }
                       },
                     ),
                     SizedBox(

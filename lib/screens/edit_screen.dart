@@ -14,6 +14,7 @@ class EditScreen extends StatefulWidget {
 class _EditScreenState extends State<EditScreen> {
   TextEditingController rollno = TextEditingController();
   DateTime _selectedDate;
+  bool _isLoading = false;
 
   showErrorMessage(String msg) {
     Fluttertoast.showToast(msg: msg);
@@ -44,7 +45,7 @@ class _EditScreenState extends State<EditScreen> {
         ),
       ),
       drawer: MainDrawer(),
-      body: Padding(
+      body: _isLoading ? Center(child: CircularProgressIndicator(),) : Padding(
         padding: EdgeInsets.symmetric(horizontal: 30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -122,16 +123,20 @@ class _EditScreenState extends State<EditScreen> {
                 } else if (_selectedDate == null) {
                   showErrorMessage("Donated date is mandatory");
                 } else {
-                  await Provider.of<BloodService>(context, listen: false)
-                      .updateDonateInfo(rollno.text.toUpperCase(), _selectedDate)
-                      .then((_) {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/', (route) => false);
+                  setState(() {
+                    _isLoading = true;
                   });
+                  await Provider.of<BloodService>(context, listen: false)
+                      .updateDonateInfo(
+                          rollno.text.toUpperCase(), _selectedDate);
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, '/', (route) => false);
                 }
               },
             ),
-
           ],
         ),
       ),

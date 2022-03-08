@@ -5,8 +5,8 @@ import 'package:nss_blood_finder/screens/createReqScreen.dart';
 import 'package:nss_blood_finder/screens/deptCountScreen.dart';
 import 'package:nss_blood_finder/screens/donationFilterScreen.dart';
 import 'package:nss_blood_finder/screens/donationsScreen.dart';
+import 'package:nss_blood_finder/screens/forgotPasswordScreen.dart';
 import 'package:nss_blood_finder/screens/formImgScreen.dart';
-import 'package:nss_blood_finder/screens/registerScreen.dart';
 import 'package:nss_blood_finder/screens/homeScreen.dart';
 import 'package:nss_blood_finder/screens/updateRequest.dart';
 import 'package:nss_blood_finder/screens/updateRequestOpen.dart';
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       ChangeNotifierProvider(create: (ctx) => AuthProvider()),
     ],
     child: MaterialApp(
-      title: 'Flutter Demo',
+      title: 'KEC Blood Finder',
       theme: ThemeData(
               primarySwatch: Colors.red,
               canvasColor: Color.fromRGBO(255, 2254, 229, 1),
@@ -73,7 +73,6 @@ class MyApp extends StatelessWidget {
         EditScreen.routeName: (ctx) => EditScreen(),
         ProfileScreen.routeName: (ctx) => ProfileScreen(),
         EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
-        RegisterScreen.routeName: (ctx) => RegisterScreen(),
         AddDataScreen.routeName: (ctx) => AddDataScreen(),
         CreateReqScreen.routeName: (ctx) => CreateReqScreen(),
         AddAccountScreen.routeName: (ctx) => AddAccountScreen(),
@@ -84,6 +83,7 @@ class MyApp extends StatelessWidget {
         DonationsScreen.routeName: (ctx) => DonationsScreen(),
         DonationFilerScreen.routeName: (ctx) => DonationFilerScreen(),
         DeptCountScreen.routeName: (ctx) => DeptCountScreen(),
+        ForgotPasswordScreen.routeName: (ctx) => ForgotPasswordScreen(),
       },
       debugShowCheckedModeBanner: false,
     ));

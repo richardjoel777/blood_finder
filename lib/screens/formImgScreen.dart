@@ -32,8 +32,12 @@ class _FormImageScreenState extends State<FormImageScreen> {
         final response = await http.get(Uri.parse(data['url']));
         final imageName = path.basename(data['url']);
         log(imageName);
-        String localpath = await AndroidExternalStorage.getExternalStoragePublicDirectory(DirType.downloadDirectory);
-        final file = await File(localpath+'/Donations/'+ data['fileName']+'.jpg').create(recursive: true);
+        String localpath =
+            await AndroidExternalStorage.getExternalStoragePublicDirectory(
+                DirType.downloadDirectory);
+        final file =
+            await File(localpath + '/Donations/' + data['fileName'] + data['type'])
+                .create(recursive: true);
         await file.writeAsBytes(response.bodyBytes);
         Fluttertoast.showToast(msg: "Image Saved Successfully");
         // log(localpath);
@@ -42,6 +46,9 @@ class _FormImageScreenState extends State<FormImageScreen> {
       }
     } catch (ex) {
       log(ex.toString());
+      setState(() {
+        isLoading = false;
+      });
     }
     setState(() {
       isLoading = false;

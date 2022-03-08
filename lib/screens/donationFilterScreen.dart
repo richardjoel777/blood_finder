@@ -89,6 +89,7 @@ class _DonationFilerScreenState extends State<DonationFilerScreen> {
         });
         // print(dists);
         // print(currentFilters);
+        donor.text = currentFilters['donor'];
         districts = dists;
         departments = depts;
         bloodGroups = bgs;

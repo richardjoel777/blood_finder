@@ -14,6 +14,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
   String bloodgroup;
   TextEditingController reqId = new TextEditingController();
   bool isInit = true;
+  bool _isLoading = false;
   List bloodGroups = [];
   List requests = [];
   BloodService bloodService = BloodService();
@@ -24,6 +25,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
 
   Future<void> didChangeDependencies() async {
     if (isInit) {
+      setState(() {
+        _isLoading = true;
+      });
       List groups = await bloodService.getBloodGroups();
       if (Provider.of<BloodService>(context, listen: false).admins.isEmpty) {
         await Provider.of<BloodService>(context, listen: false).getAdmins();
@@ -31,6 +35,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
       setState(() {
         bloodGroups = groups;
         isInit = false;
+        _isLoading = false;
       });
     }
     super.didChangeDependencies();
@@ -47,7 +52,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      body: isInit
+      body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Padding(
@@ -148,39 +153,20 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                 if (bloodgroup == null || reqId.text.isEmpty) {
                                   showErrorMessage("All fields are mandatory");
                                 } else {
-                                  var found =
-                                      await bloodService.validateRequest(reqId.text);
-                                  // for (int i = 0; i < requests.length; i++) {
-                                  //   print(DateTime.fromMillisecondsSinceEpoch(
-                                  //           requests[i]['time'].seconds * 1000)
-                                  //       .difference(DateTime.now())
-                                  //       .inMinutes);
-                                  //   if (requests[i]['id'] == reqId.text &&
-                                  //       (DateTime.now()
-                                  //               .difference(DateTime
-                                  //                   .fromMillisecondsSinceEpoch(
-                                  //                       requests[i]['time']
-                                  //                               .seconds *
-                                  //                           1000))
-                                  //               .inMinutes <
-                                  //           90) &&
-                                  //       (DateTime.now()
-                                  //               .difference(DateTime
-                                  //                   .fromMillisecondsSinceEpoch(
-                                  //                       requests[i]['time']
-                                  //                               .seconds *
-                                  //                           1000))
-                                  //               .inMinutes >=
-                                  //           0)) {
-                                  //     found = true;
-                                  //   }
-                                  // }
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  var found = await bloodService
+                                      .validateRequest(reqId.text);
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
                                   if (found == true) {
                                     Navigator.of(context).pushNamed(
                                         DonateScreen.routeName,
                                         arguments: bloodgroup);
                                   } else {
-                                    showErrorMessage("Invalid Request");
+                                    showErrorMessage("Invalid Request Id or Request ID exprired");
                                   }
                                 }
                               },

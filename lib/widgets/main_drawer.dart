@@ -8,7 +8,6 @@ import 'package:nss_blood_finder/screens/donationsScreen.dart';
 import 'package:nss_blood_finder/screens/edit_profile.dart';
 import 'package:nss_blood_finder/screens/edit_screen.dart';
 import 'package:nss_blood_finder/screens/loginScreen.dart';
-import 'package:nss_blood_finder/screens/registerScreen.dart';
 import 'package:nss_blood_finder/screens/updateRequestOpen.dart';
 import 'package:nss_blood_finder/services/auth.dart';
 import 'package:nss_blood_finder/services/blood.dart';
@@ -95,10 +94,6 @@ class _MainDrawerState extends State<MainDrawer> {
           if(auth.currentUser == null) buildListTile("login", Icons.login, () {
             Navigator.of(context).pushNamed(
                 LoginScreen.routeName,);
-          }),
-          if(auth.currentUser == null) buildListTile("Register", Icons.login, () {
-            Navigator.of(context).pushNamed(
-                RegisterScreen.routeName,);
           }),
           if(auth.currentUser != null && admins.contains(auth.currentUser.uid)) buildListTile("Edit Profile", Icons.edit, () {
             Navigator.of(context).pushNamed(

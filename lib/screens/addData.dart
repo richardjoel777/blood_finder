@@ -13,6 +13,7 @@ class AddDataScreen extends StatefulWidget {
 
 class _AddDataScreenState extends State<AddDataScreen> {
   bool isInit = true;
+  bool isLoading = false;
   TextEditingController nameTextEditingController = new TextEditingController();
   TextEditingController rollnoTextEditingController =
       new TextEditingController();
@@ -23,23 +24,29 @@ class _AddDataScreenState extends State<AddDataScreen> {
   String bloodgroup;
   String dept;
   String year;
+  String sec;
   String area;
   bool isDayScholar = false;
   bool isWilling = false;
   List bloodGroups = [];
   List districts = [];
   List years = ["1", "2", "3", "4", "FACULTY", "PASSED OUT"];
+  List sections = ["A", "B", "C", "D", "E", "F"];
   List departments = [];
 
   @override
   void didChangeDependencies() async {
     if (isInit) {
+      setState(() {
+        isLoading = true;
+      });
       final bloodservice = Provider.of<BloodService>(context, listen: false);
       departments = await bloodservice.getDepartments();
       bloodGroups = await bloodservice.getBloodGroups();
       districts = await bloodservice.getDistricts();
       setState(() {
         isInit = false;
+        isLoading = false;
       });
     } else {
       Navigator.of(context).pop();
@@ -58,12 +65,12 @@ class _AddDataScreenState extends State<AddDataScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           title: Text(
-            "Add Profile",
+            "Add Donor",
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
         drawer: MainDrawer(),
-        body: isInit
+        body: isLoading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Padding(
@@ -83,7 +90,7 @@ class _AddDataScreenState extends State<AddDataScreen> {
                         height: 20.0,
                       ),
                       Text(
-                        "Add Profile",
+                        "Add Donor",
                         style: Theme.of(context)
                             .textTheme
                             .headline6
@@ -217,10 +224,11 @@ class _AddDataScreenState extends State<AddDataScreen> {
                             SizedBox(
                               height: 1.0,
                             ),
-                            Row(
+                            if (year != "FACULTY" && year != "PASSED OUT")
+                              Row(
                                 children: [
                                   Text(
-                                    "Area : ",
+                                    "Section : ",
                                     style: Theme.of(context)
                                         .textTheme
                                         .headline1
@@ -233,8 +241,8 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                     width: 10,
                                   ),
                                   DropdownButton<String>(
-                                    value: area != null ? area : null,
-                                    items: districts.map((dynamic v) {
+                                    value: sec != null ? sec : null,
+                                    items: sections.map((dynamic v) {
                                       return new DropdownMenuItem<String>(
                                         value: v,
                                         child: Text(v),
@@ -242,13 +250,49 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                     }).toList(),
                                     onChanged: (newValue) {
                                       setState(() {
-                                        area = newValue;
+                                        sec = newValue;
                                       });
                                     },
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 1.0,),
+                            SizedBox(
+                              height: 1.0,
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Area : ",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline1
+                                      .copyWith(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.black),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                DropdownButton<String>(
+                                  value: area != null ? area : null,
+                                  items: districts.map((dynamic v) {
+                                    return new DropdownMenuItem<String>(
+                                      value: v,
+                                      child: Text(v),
+                                    );
+                                  }).toList(),
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                      area = newValue;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 1.0,
+                            ),
                             if (year != "FACULTY" && year != "PASSED OUT")
                               TextField(
                                 controller: rollnoTextEditingController,
@@ -358,7 +402,7 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                 height: 50.0,
                                 child: Center(
                                   child: Text(
-                                    "Add Profile",
+                                    "Add Donor",
                                     style:
                                         Theme.of(context).textTheme.headline6,
                                   ),
@@ -386,17 +430,24 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                     showErrorMessage("Department is mandatory");
                                   } else if (year == null) {
                                     showErrorMessage("Year is mandatory");
+                                  } else if (sec == null) {
+                                    showErrorMessage("Section is mandatory");
                                   } else if (isWilling == null) {
-                                    showErrorMessage("Is Willing is mandatory");
+                                    showErrorMessage(
+                                        "Willingness is mandatory");
                                   } else if (isDayScholar == null) {
                                     showErrorMessage(
                                         "Is DayScholar is mandatory");
                                   } else {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
                                     await bloodService.addUserData(
                                       nameTextEditingController.text,
                                       bloodgroup,
                                       dept,
                                       year,
+                                      sec,
                                       rollnoTextEditingController.text,
                                       phone1TextEditingController.text,
                                       phone2TextEditingController.text,
@@ -404,6 +455,9 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                       isWilling,
                                       isDayScholar,
                                     );
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                     Navigator.of(context)
                                         .pushNamedAndRemoveUntil(
                                             '/', (route) => false);
@@ -427,11 +481,15 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                   } else if (isWilling == null) {
                                     showErrorMessage("Is Willing is mandatory");
                                   } else {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
                                     await bloodService.addUserData(
                                       nameTextEditingController.text,
                                       bloodgroup,
                                       " ",
                                       year,
+                                      "",
                                       phone1TextEditingController.text,
                                       phone1TextEditingController.text,
                                       phone2TextEditingController.text,
@@ -439,6 +497,9 @@ class _AddDataScreenState extends State<AddDataScreen> {
                                       isWilling,
                                       false,
                                     );
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                     Navigator.of(context)
                                         .pushNamedAndRemoveUntil(
                                             '/', (route) => false);
