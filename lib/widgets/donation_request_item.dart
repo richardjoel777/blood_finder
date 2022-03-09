@@ -108,16 +108,27 @@ class DonationRequestItem extends StatelessWidget {
                         onPressed: () async {
                           await BloodService.updateLastCalled(
                               userData['rollno']);
+                          // userData['lastCalled'] = DateTime.now();
                           launch(('tel:${userData['phone1']}'));
                         },
                         child: Text(userData['phone1'])),
-                    TextButton(
+                    // TextButton(
+                    //     onPressed: () async {
+                    //       await BloodService.updateLastCalled(
+                    //           userData['rollno']);
+                    //       launch(('tel:${userData['phone2']}'));
+                    //     },
+                    //     child: Text(userData['phone2'])),
+                    IconButton(
                         onPressed: () async {
-                          await BloodService.updateLastCalled(
-                              userData['rollno']);
-                          launch(('tel:${userData['phone2']}'));
+                          String detail =
+                              '${userData['name']}\n${userData['rollno']}\n${userData['phone1']}\n${userData['bloodGroup']}';
+                          var url = "https://wa.me/?text=$detail";
+                          await launch(url);
+                          // Clipboard.setData(ClipboardData(text: detail));
+                          // Fluttertoast.showToast(msg: "Donor details copied to  clipBoard");
                         },
-                        child: Text(userData['phone2'])),
+                        icon: Icon(Icons.share)),
                   ],
                 )
               ],
