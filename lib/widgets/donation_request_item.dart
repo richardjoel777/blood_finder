@@ -123,7 +123,7 @@ class DonationRequestItem extends StatelessWidget {
                         onPressed: () async {
                           String detail =
                               '${userData['name']}\n${userData['rollno']}\n${userData['phone1']}\n${userData['bloodGroup']}';
-                          var url = "https://wa.me/?text=$detail";
+                          var url = "https://wa.me/?text=${Uri.encodeComponent(detail)}";
                           await launch(url);
                           // Clipboard.setData(ClipboardData(text: detail));
                           // Fluttertoast.showToast(msg: "Donor details copied to  clipBoard");
