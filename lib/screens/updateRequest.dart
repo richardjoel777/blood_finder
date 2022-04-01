@@ -675,32 +675,36 @@ class _EditScreenState extends State<UpdateReqScreen> {
                               'dept': i['dept'],
                             });
                           }
-                          // var res = await Provider.of<BloodService>(context,
-                          //         listen: false)
-                          //     .updateRequest(
-                          //   id,
-                          //   patientNameTextEditingController.text,
-                          //   bloodgroup,
-                          //   hospitalNameTextEditingController.text,
-                          //   area,
-                          //   unitsTextEditingController.text,
-                          //   reasonTextEditingController.text,
-                          //   inchargeNameTextEditingController.text,
-                          //   inchargeRollnoTextEditingController.text,
-                          //   patientPhoneTextEditingController.text,
-                          //   isArranged,
-                          //   donorsData,
-                          //   accompanyNameTextEditingController.text,
-                          //   accompanyRollnoTextEditingController.text,
-                          // );
-                          // setState(() {
-                          //   isLoading = false;
-                          // });
-                          // if (res) {
-                          //   Fluttertoast.showToast(msg: "Updated Successfully");
-                          //   Navigator.of(context)
-                          //       .pushNamedAndRemoveUntil('/', (route) => false);
-                          // }
+                          var res = await Provider.of<BloodService>(context,
+                                  listen: false)
+                              .updateRequest(
+                            id,
+                            patientNameTextEditingController.text,
+                            bloodgroup,
+                            hospitalNameTextEditingController.text,
+                            area,
+                            unitsTextEditingController.text,
+                            reasonTextEditingController.text,
+                            inchargeNameTextEditingController.text,
+                            inchargeRollnoTextEditingController.text,
+                            patientPhoneTextEditingController.text,
+                            isArranged,
+                            donorsData,
+                            accompanyNameTextEditingController.text,
+                            accompanyRollnoTextEditingController.text,
+                          );
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (res) {
+                            Fluttertoast.showToast(msg: "Updated Successfully");
+                            Navigator.of(context)
+                                .pushNamedAndRemoveUntil('/', (route) => false);
+                          }
+                          else
+                          {
+                            Fluttertoast.showToast(msg: "Error Occured");
+                          }
                         }
                       },
                     ),

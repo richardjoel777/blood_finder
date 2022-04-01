@@ -566,6 +566,7 @@ class BloodService with ChangeNotifier {
   }
 
   Future<void> getDonations() async {
+    _isLoading = true;
     var fb = FirebaseFirestore.instance;
     try {
       var snapshots = await fb.collection("requests").get();
@@ -578,6 +579,7 @@ class BloodService with ChangeNotifier {
           _perDonations = temp;
           _donations = temp;
           setDonationFilters(_perDonations);
+          _isLoading = false;
           notifyListeners();
         }
       });

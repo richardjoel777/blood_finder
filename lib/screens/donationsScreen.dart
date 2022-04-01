@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:nss_blood_finder/screens/donationFilterScreen.dart';
 import 'package:nss_blood_finder/services/blood.dart';
@@ -12,18 +13,14 @@ class DonationsScreen extends StatefulWidget {
 
 class _DonationsScreenState extends State<DonationsScreen> {
   bool isInit = true;
-  bool isLoading = false;
 
   @override
   void didChangeDependencies() async {
     if (isInit) {
-      setState(() {
-        isLoading = true;
-      });
       await Provider.of<BloodService>(context).getDonations();
+      // log(Provider.of<BloodService>(context).donations.toString());
       setState(() {
         isInit = false;
-        isLoading = false;
       });
     }
     super.didChangeDependencies();
@@ -34,7 +31,7 @@ class _DonationsScreenState extends State<DonationsScreen> {
     final bloodService = Provider.of<BloodService>(context);
     final mediaQuery = MediaQuery.of(context);
     return Scaffold(
-        backgroundColor: Theme.of(context).canvasColor,
+        backgroundColor: Colors.white,
         appBar: AppBar(
           leading: new IconButton(
               icon: new Icon(Icons.arrow_back),
@@ -55,14 +52,18 @@ class _DonationsScreenState extends State<DonationsScreen> {
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
-        body: isLoading == false
+        body: (!isInit && !bloodService.isLoading)
             ? Container(
                 // padding: EdgeInsets.all(15),
                 height: (mediaQuery.size.height - 60 - mediaQuery.padding.top) *
                     0.9,
                 margin: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                child: bloodService.donations.isNotEmpty
-                    ? ListView.builder(
+                child: bloodService.donations.length > 0
+                    // ? Center(child: Text("Donations"),)
+                    ? ListView.separated(
+                        separatorBuilder: (context, index) => Divider(
+                              color: Colors.black,
+                            ),
                         itemBuilder: (context, index) {
                           return DonationItem(
                             donation: bloodService.donations[index],
